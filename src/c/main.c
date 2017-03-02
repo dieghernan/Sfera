@@ -92,12 +92,17 @@ static void layer_update_proc(Layer *layer, GContext *ctx) {
       GTextOverflowModeWordWrap, GTextAlignmentRight, NULL
   );
     
-    // Create condition display
-    GRect condrect=GRect(hourect.origin.x+hourect.size.w/2+2,
+  // Create condition display
+  GRect condrect=GRect(hourect.origin.x+hourect.size.w/2+2,
                    hourect.origin.y+hourect.size.h+1,
                    hourect.size.w/2+19,
                    inner.size.h/2-hourect.size.h/2-minrect.size.h/2-2);
-  
+  char condnow[44]="a";
+  graphics_draw_text(ctx, condnow, 
+      fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_WICON_22)), 
+      condrect,
+      GTextOverflowModeWordWrap, GTextAlignmentLeft, NULL
+  );
   
   //Dev: Display shapes
   graphics_draw_rect(ctx,minrect);

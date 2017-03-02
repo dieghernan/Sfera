@@ -14,6 +14,12 @@
         "resources": {
             "media": [
                 {
+                    "file": "fonts/weatherfontcustom.ttf",
+                    "name": "FONT_WICON_22",
+                    "targetPlatforms": null,
+                    "type": "font"
+                },
+                {
                     "characterRegex": "[0-9]",
                     "file": "fonts/Gotham Bold.otf",
                     "name": "FONT_GBOLD_22",
