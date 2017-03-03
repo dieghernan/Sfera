@@ -1,15 +1,23 @@
 {
     "author": "dieghernan",
-    "dependencies": {},
+    "dependencies": {
+        "pebble-clay": "^1.0.3"
+    },
     "keywords": [],
     "name": "sfera",
     "pebble": {
         "capabilities": [
-            "location"
+            "location",
+            "configurable"
         ],
         "displayName": "Sfera",
         "enableMultiJS": true,
-        "messageKeys": [],
+        "messageKeys": [
+            "BackgroundColor",
+            "ForegroundColor",
+            "DotsColor",
+            "WeatherUnit"
+        ],
         "projectType": "native",
         "resources": {
             "media": [
@@ -34,15 +42,15 @@
                     "type": "font"
                 },
                 {
+                    "characterRegex": "[0-9 a-z A-Z]",
                     "file": "fonts/Gotham Light.otf",
-                    "name": "FONT_GLIGHT_18",
+                    "name": "FONT_GLIGHT_12",
                     "targetPlatforms": null,
                     "type": "font"
                 },
                 {
-                    "characterRegex": "[0-9 a-z A-Z]",
                     "file": "fonts/Gotham Light.otf",
-                    "name": "FONT_GLIGHT_12",
+                    "name": "FONT_GLIGHT_10",
                     "targetPlatforms": null,
                     "type": "font"
                 }
