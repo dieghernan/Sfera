@@ -28,3 +28,5 @@ Autotranslating of weekday and location supported for:
 
 ## License
 Developed under license [MIT](https://raw.githubusercontent.com/dieghernan/Sfera/master/LICENSE).
+
+#### Made in Madrid, Spain
