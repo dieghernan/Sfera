@@ -24,7 +24,7 @@ Autotranslating of weekday and location supported for:
 * Fonts in use: 
   * [Weather Icons](https://erikflowers.github.io/weather-icons) by Eric Flowers, modified and fitted to regular alphabet, instead of Unicode values.
   * [Gotham Fonts](http://fontsgeek.com/search?q=gotham) downloaded from [fontsgeek.com](http://fontsgeek.com).
- * Location and Weather [![banner](https://poweredby.yahoo.com/purple.png)](https://www.yahoo.com/?ilc=401)
+* Location and Weather [![banner](https://poweredby.yahoo.com/purple.png)](https://www.yahoo.com/?ilc=401)
 
 ## License
 Developed under license [MIT](https://raw.githubusercontent.com/dieghernan/Sfera/master/LICENSE).
