@@ -29,6 +29,13 @@
         "resources": {
             "media": [
                 {
+                    "file": "images/sfera.png",
+                    "menuIcon": true,
+                    "name": "preview",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
+                {
                     "file": "fonts/weatherfontcustom.ttf",
                     "name": "FONT_WICON_22",
                     "targetPlatforms": null,
