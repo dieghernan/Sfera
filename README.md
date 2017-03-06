@@ -28,4 +28,4 @@ Fonts in use:
 
 ## License
 --------
-License [MIT](Sfera/LICENSE)
+License [MIT](https://github.com/dieghernan/Sfera/blob/master/LICENSE)
