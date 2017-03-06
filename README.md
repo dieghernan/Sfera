@@ -1,6 +1,5 @@
-# Sfera
 
-## Introducing Sfera
+# Introducing Sfera
 **Sfera** for Pebble is a highly customizable watchface that get the most of the smartwatch capabilities. Set your preferences and enjoy this beautifully designed watchface.
 
 ## Features
@@ -11,7 +10,8 @@
   * Weather: Current conditions on °c or °f.
   * Location: Maximum accuracy, displays the neighborhood when available, instead of city.
     * *Munich or München? Londres of London? Sfera does the job for you! Get the location name translated to the language you use on your phone settings.*
-  * Autotranslating supported for:
+### Internationalization 
+Autotranslating of weekday and location supported for:
     * English 
     * Spanish
     * German
