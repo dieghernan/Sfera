@@ -31,7 +31,7 @@
                 {
                     "file": "images/sfera.png",
                     "menuIcon": true,
-                    "name": "preview",
+                    "name": "sfera",
                     "targetPlatforms": null,
                     "type": "bitmap"
                 },
