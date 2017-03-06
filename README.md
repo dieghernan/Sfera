@@ -27,5 +27,4 @@ Fonts in use:
 [![banner](https://poweredby.yahoo.com/purple.png)](https://www.yahoo.com/?ilc=401)
 
 ## License
---------
-License [MIT](https://github.com/dieghernan/Sfera/blob/master/LICENSE)
+License [MIT](https://raw.githubusercontent.com/dieghernan/Sfera/master/LICENSE)
