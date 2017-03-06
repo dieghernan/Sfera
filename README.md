@@ -1,6 +1,6 @@
 
-# Introducing Sfera
-**Sfera** for Pebble is a highly customizable watchface that get the most of the smartwatch capabilities. Set your preferences and enjoy this beautifully designed watchface.
+## Introducing Sfera
+**Sfera** for Pebble Time Round is a highly customizable watchface that get the most of the smartwatch capabilities. Set your preferences and enjoy this beautifully designed watchface.
 
 ## Features
 * Display centered hour
