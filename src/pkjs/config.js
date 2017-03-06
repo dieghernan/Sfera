@@ -67,7 +67,7 @@ module.exports = [
         "messageKey": "DisplayLoc",
         "label": "Location",
         "defaultValue": false,
-        "description": "When available, neighbourhood is displayed instead of city"
+        "description": "When available, neighborhood is displayed instead of city"
       },
     ]
  },
@@ -84,7 +84,7 @@ module.exports = [
   },
   {
       "type": "heading",
-      "defaultValue": "Made with ♥ in Madrid, Spain",
+      "defaultValue": "Made in Madrid, Spain",
       "size":6
   }    
 ];
