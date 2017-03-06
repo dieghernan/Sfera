@@ -10,14 +10,15 @@
   * Weather: Current conditions on °c or °f.
   * Location: Maximum accuracy, displays the neighborhood when available, instead of city.
     * *Munich or München? Londres of London? Sfera does the job for you! Get the location name translated to the language you use on your phone settings.*
-### Internationalization 
+    
+### Internationalization
 Autotranslating of weekday and location supported for:
-    * English 
-    * Spanish
-    * German
-    * French
-    * Portuguese
-    * Italian
+* English 
+* Spanish
+* German
+* French
+* Portuguese
+* Italian
  
 ## Attributions
 Fonts in use: 
