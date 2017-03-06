@@ -1,11 +1,15 @@
 #include <pebble.h>
 #include "main.h"
+#include "weekday.h"
+#include "weathericon.h"
 
 
-static GFont FontHour, FontMinute,FontDate, FontTemp, FontCond;
+static GFont FontHour, FontMinute,FontDate, FontTemp, FontCond, FontCiti;
+static char tempstring[44], condstring[44], citistring[44];
 static Window *s_window;
 static Layer *s_canvas;
 static int s_hours, s_minutes, s_weekday, s_day;
+
 static int32_t get_angle_dot(int dot) {  
   // Progress through 12 hours, out of 360 degrees
   return (dot * 360) / 12;
@@ -24,9 +28,14 @@ static int get_angle_for_minutes(int minutes){
 ClaySettings settings;
 // Initialize the default settings
 static void prv_default_settings() { 
-  settings.BackgroundColor = GColorBlack;
-  settings.ForegroundColor  = GColorWhite;
-  settings.DotsColor        = GColorRed;
+  settings.BackgroundColor = GColorWhite;
+  settings.ForegroundColor  = GColorOxfordBlue;
+  settings.DotsColor        = GColorPictonBlue;
+  settings.WeatherUnit       = false;
+  settings.WeatherCond       =0;
+  settings.DisplayLoc        =false;
+  settings.DisplayDate    =false;
+  settings.DisplayLoc    =false;
  }
 ///////////////////////////
 //////End Configuration///
@@ -36,98 +45,111 @@ static void prv_default_settings() {
 
 
 static void layer_update_proc(Layer *layer, GContext *ctx) {
-
   // Colors
   graphics_context_set_fill_color(ctx, settings.DotsColor);
   graphics_context_set_stroke_color(ctx, settings.DotsColor);
-  graphics_context_set_text_color(ctx, settings.ForegroundColor);
-  // Adjust geometry variables for inner ring
+  graphics_context_set_text_color(ctx, settings.ForegroundColor); 
+  // Local language
+  const char* sys_locale = i18n_get_system_locale();
+    
+  // Adjust geometry variables for dots
   GRect bounds = layer_get_bounds(layer);
   GRect frame = grect_inset(bounds, GEdgeInsets(7));
- 
   int minute_angle=get_angle_for_minutes(s_minutes);
-   // Create dots 
+  // Create dots 
   for(int i = 0; i < 12; i++) {
     int dot_angle = get_angle_dot(i);
-    GPoint pos = gpoint_from_polar(frame, GOvalScaleModeFitCircle, DEG_TO_TRIGANGLE(dot_angle));
+    GPoint pos = gpoint_from_polar(frame, 
+                                   GOvalScaleModeFitCircle, 
+                                   DEG_TO_TRIGANGLE(dot_angle));
     // Leave the current minute without dot
     if (i != minute_angle/30){ 
-      graphics_fill_circle(ctx, pos, 2);
-   }
+      graphics_fill_circle(ctx, pos, 4);
+    }
   }
           
   // Create minute display
   GRect inner=grect_inset(frame, GEdgeInsets(12));
   char minutenow[4];
   snprintf(minutenow, sizeof(minutenow), "%02d", s_minutes);
-  GRect minrect = grect_centered_from_polar(inner, GOvalScaleModeFitCircle, DEG_TO_TRIGANGLE(minute_angle),GSize(36,28));
+  GRect minrect = grect_centered_from_polar(inner, 
+                                            GOvalScaleModeFitCircle, 
+                                            DEG_TO_TRIGANGLE(minute_angle),
+                                            GSize(36,28));
   graphics_draw_text(ctx, minutenow, 
-      FontMinute,
-      minrect, 
-      GTextOverflowModeFill, GTextAlignmentCenter, NULL
-    );
+                     FontMinute,minrect, 
+                     GTextOverflowModeFill, GTextAlignmentCenter, NULL
+                    );
 
  
   // Create hour display
-  GRect hourect =grect_centered_from_polar(GRect(bounds.size.h/2,bounds.size.w/2,0,0), GOvalScaleModeFitCircle, 0, GSize(50,42));
+  GRect hourect =grect_centered_from_polar(GRect(bounds.size.h/2,bounds.size.w/2,0,0),
+                                           GOvalScaleModeFitCircle,
+                                           0, 
+                                           GSize(50,42));
   char hournow[4];
   snprintf(hournow, sizeof(hournow), "%02d", s_hours);
   graphics_draw_text(ctx, hournow, 
-      FontHour,
-      hourect,
-      GTextOverflowModeFill, GTextAlignmentCenter, NULL
-  );
+                     FontHour,hourect,
+                     GTextOverflowModeFill, GTextAlignmentCenter, NULL
+                    );
 
   // Create date display
-  GRect daterect=GRect(hourect.origin.x+hourect.size.w+1,
-                   hourect.origin.y,
-                   inner.size.w/2-hourect.size.w/2-minrect.size.w/2-2,
-                   hourect.size.h);
-  char datenow[4]="Lun";
-  char convertday[4];
-  snprintf(convertday, sizeof(convertday), " %02d", s_day);
-  // Concatenate date
-  strcat(datenow, convertday);
+  if (settings.DisplayDate){
+    GRect daterect=GRect(hourect.origin.x+hourect.size.w+1,
+                   hourect.origin.y+8,
+                   inner.size.w/2-hourect.size.w/2-minrect.size.w/2+2,
+                   hourect.size.h
+                        );
+    char datenow[44];
+    fetchwday(s_weekday, sys_locale, datenow);
+    char convertday[4];
+    snprintf(convertday, sizeof(convertday), " %02d", s_day);
+    // Concatenate date
+    strcat(datenow, convertday);
     graphics_draw_text(ctx, datenow, 
-      FontDate,
-      daterect,
-      GTextOverflowModeWordWrap, GTextAlignmentLeft, NULL
-  );
+                       FontDate,daterect,
+                       GTextOverflowModeWordWrap, GTextAlignmentLeft, NULL
+                      );
+  }
   
-  // Create temp display
-    GRect temprect=GRect(hourect.origin.x,
+  if (settings.DisplayTemp){
+    // Create temp display
+    GRect temprect=GRect(hourect.origin.x-10,
                    hourect.origin.y+hourect.size.h+1,
-                   hourect.size.w/2-1,
-                   (inner.size.h/2-hourect.size.h/2-minrect.size.h/2)/2);
-  char tempnow[44]="-12°c";
-  graphics_draw_text(ctx, tempnow, 
-      FontTemp,
-      temprect,
-      GTextOverflowModeWordWrap, GTextAlignmentRight, NULL
-  );
+                   hourect.size.w/2+9,
+                   (inner.size.h/2-hourect.size.h/2)/2);
     
-  // Create condition display
-  GRect condrect=GRect(hourect.origin.x+hourect.size.w/2+2,
+    graphics_draw_text(ctx, tempstring, 
+                       FontTemp,temprect,
+                       GTextOverflowModeWordWrap, GTextAlignmentRight, NULL
+                      );
+    
+    // Create condition display
+    GRect condrect=GRect(hourect.origin.x+hourect.size.w/2+1,
                    hourect.origin.y+hourect.size.h+1,
                    hourect.size.w/2-1,
-                   (inner.size.h/2-hourect.size.h/2-minrect.size.h/2)/2);
-  char condnow[44]="a";
-  graphics_draw_text(ctx, condnow, 
-      FontCond, 
-      condrect,
-      GTextOverflowModeWordWrap, GTextAlignmentLeft, NULL
-  );
-
-  // Dev
- 
+                   (inner.size.h/2-hourect.size.h/2)/2);
+    
+    graphics_draw_text(ctx, condstring, 
+                       FontCond,condrect,
+                       GTextOverflowModeWordWrap, GTextAlignmentRight, NULL
+                      );
+  }
   
-  graphics_draw_rect(ctx, hourect);
-  graphics_draw_rect(ctx, minrect);
-  graphics_draw_rect(ctx, temprect);
-  graphics_draw_rect(ctx, condrect);
-  
+  if (settings.DisplayLoc) 
+   {
+    GRect locrect=GRect(hourect.origin.x-17, 
+                        hourect.origin.y-20,
+                        hourect.size.w+34, 
+                        25);
+      graphics_draw_text(ctx, citistring, 
+      FontCiti, 
+      locrect,
+      GTextOverflowModeWordWrap, GTextAlignmentCenter, NULL
+                        );
+  }
 }
-
 
 /////////////////////////////////////////
 ////Init: Handle Settings and Weather////
@@ -164,11 +186,59 @@ static void prv_inbox_received_handler(DictionaryIterator *iter, void *context) 
     settings.DotsColor = GColorFromHEX(dt_color_t->value->int32);
   }  
   
+  // Weather Cond
+  Tuple *wcond_t=dict_find(iter, MESSAGE_KEY_WeatherCond );
+  if (wcond_t){ 
+    get_conditions_yahoo((int)wcond_t->value->int32, condstring);
+  }
+  
+   // Weather Temp
+  Tuple *wtemp_t=dict_find(iter, MESSAGE_KEY_WeatherTemp);
+  if (wtemp_t){ 
+    snprintf(tempstring, sizeof(tempstring), "%s", wtemp_t->value->cstring);
+  }
+  
+  // Location
+  Tuple *location_t=dict_find(iter,MESSAGE_KEY_NameLocation);
+  Tuple *city_t=dict_find(iter,MESSAGE_KEY_NameCity);
+  if (location_t){ 
+    snprintf(citistring, sizeof(citistring), "%s", location_t->value->cstring);
+    APP_LOG(APP_LOG_LEVEL_DEBUG,"Now location is %s",citistring);
+  }
+  else if (city_t){
+    snprintf(citistring, sizeof(citistring), "%s", city_t->value->cstring);
+    APP_LOG(APP_LOG_LEVEL_DEBUG,"Now location is %s",citistring);
+  }
+  
+  // Get display handlers
+  Tuple *disdate_t=dict_find(iter,MESSAGE_KEY_DisplayDate);
+  if (disdate_t){
+    if (disdate_t->value->int32==0){
+      settings.DisplayDate=false;
+    }
+    else settings.DisplayDate=true;
+  }
+  
+  Tuple *distemp_t=dict_find(iter,MESSAGE_KEY_DisplayTemp);
+  if (distemp_t){
+    if (distemp_t->value->int32==0){
+      settings.DisplayTemp=false;
+    }
+    else settings.DisplayTemp=true;
+  }
+  
+  Tuple *disloc_t=dict_find(iter,MESSAGE_KEY_DisplayLoc);
+  if (disloc_t){
+    if (disloc_t->value->int32==0){
+      settings.DisplayLoc=false;
+    }
+    else settings.DisplayLoc=true;
+  }
+  
   //Update colors
 	layer_mark_dirty(s_canvas);
   window_set_background_color(s_window, settings.BackgroundColor);
-
- 
+       
   // Save the new settings to persistent storage
   prv_save_settings();
  
@@ -206,6 +276,25 @@ void main_window_update(int hours, int minutes, int weekday, int day) {
   s_day=day;
   s_weekday=weekday;
   layer_mark_dirty(s_canvas);
+  
+  // Get weather update every 30 minutes if needed
+  if(minutes % 30 == 0) {
+    APP_LOG(APP_LOG_LEVEL_DEBUG,"Tick at %d",minutes);
+    if (settings.DisplayTemp || settings.DisplayLoc){   
+      APP_LOG(APP_LOG_LEVEL_DEBUG, "Update weather at %d", minutes);
+      // Begin dictionary
+      DictionaryIterator *iter;
+      app_message_outbox_begin(&iter);
+      if (!iter) {
+        // Error creating outbound message
+        return;
+      }    
+      int value = 1;
+      dict_write_int(iter, 1, &value, sizeof(int), true);
+      dict_write_end(iter);
+      app_message_outbox_send();
+    }  
+	}
 }
 
 static void tick_handler(struct tm *time_now, TimeUnits changed) {
@@ -218,21 +307,21 @@ static void init() {
   app_message_register_inbox_received(prv_inbox_received_handler);
   app_message_open(128, 128);
   
-  
   // Load Fonts
   FontHour  =fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_GBOLD_34));
   FontMinute=fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_GBOLD_22));
   FontDate  =fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_GLIGHT_12));
-  FontTemp  =fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_GLIGHT_10));
+  FontTemp  =fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_GLIGHT_14));
   FontCond  =fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_WICON_22));
+  FontCiti  =fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_GLIGHT_10));
   
   main_window_push();
-
   tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);  
 }
 
 static void deinit() {
   tick_timer_service_unsubscribe();
+ 	app_message_deregister_callbacks();    //Destroy the callbacks for clean up
 }
 
 int main() {

@@ -17,24 +17,57 @@ module.exports = [
       {
         "type": "color",
         "messageKey": "BackgroundColor",
-        "defaultValue": "0x000000",
+        "defaultValue": "0xFFFFFF",
         "label": "Background"
       },
       {
         "type": "color",
         "messageKey": "ForegroundColor",
-        "defaultValue": "0xFFFFFF",
+        "defaultValue": "0x000055",
         "label": "Text"
       },
       {
         "type": "color",
         "messageKey": "DotsColor",
-        "defaultValue": "0xFFFFFF",
+        "defaultValue": "0x55AAFF",
         "label": "Dots"
       }      
     ]
   },
-  
+
+  {
+    "type": "section",
+    "items": [ 
+      {
+        "type": "heading",
+        "defaultValue": "Display settings"
+      },
+      {
+        "type": "toggle",
+        "messageKey": "DisplayDate",
+        "label": "Date",
+        "defaultValue": false      
+      },
+      {
+        "type": "toggle",
+        "messageKey": "DisplayTemp",
+        "label": "Weather",
+        "defaultValue": false      
+      },
+        {
+        "type": "toggle",
+        "messageKey": "WeatherUnit",
+        "label": "Temperature in Fahrenheit",
+        "defaultValue": false      
+      },
+      {
+        "type": "toggle",
+        "messageKey": "DisplayLoc",
+        "label": "Location",
+        "defaultValue": false      
+      },
+    ]
+ },
  //Yahoo disclaimer
   {
       "type": "heading",
@@ -44,6 +77,6 @@ module.exports = [
       
  {
     "type": "submit",
-    "defaultValue": "Guardar"
+    "defaultValue":"Ok"
   }
 ];
