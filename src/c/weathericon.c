@@ -50,7 +50,8 @@ static const char* const yahoomap[]={
 "t", //partly cloudy
 "b", //thundershowers
 "h", //snow showers
-"b" //isolated thundershowers
+"b", //isolated thundershowers
+ "", //Null value 
 };
 
 void get_conditions_yahoo(int yahoocond, char *conditionnow ){

@@ -10,11 +10,12 @@ typedef struct ClaySettings {
   GColor DotsColor;
   bool   WeatherUnit;
   int    WeatherCond;
-  char*   WeatherTemp;
+  char*  WeatherTemp;
   bool DisplayDate;
   bool DisplayTemp;
   bool DisplayLoc;
-   
+  bool BTOn;
+  bool GPSOn;  
     
 } __attribute__((__packed__)) ClaySettings;
 

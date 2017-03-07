@@ -15,6 +15,51 @@ var xhrRequest = function (url, type, callback) {
 };
 
 
+function locationSuccessloc(pos){
+  var langtouse=translate(navigator.language);
+  var ran=-1*Math.random()*8;
+  // Get JSON from Geolocation
+  var urlgeocities = 'https://query.yahooapis.com/v1/public/yql?q=' +
+      'select locality1.content,locality2.content from geo.places(1) where ' +
+      'text=\'(' + pos.coords.latitude + ',' + pos.coords.longitude + ')\' and ' +
+// Placeholder  'text= \'(40.398897,-3.710222700000031)\' and ' +
+      'lang=\'' + langtouse +'\'&format=json'; 
+       console.log("Geocities is " + urlgeocities);
+  
+  console.log("Requesting location");
+ // Send request to Yahoo for weather
+  xhrRequest(encodeURI(urlgeocities), 'GET', 
+    function(responseText) {
+      // responseText contains a JSON object with weather info
+      var jsonloc = JSON.parse(responseText);
+      console.log("lang is " + langtouse );
+      
+// Location
+      var location=jsonloc.query.results.place.locality2;
+      var city=jsonloc.query.results.place.locality1;
+      console.log("location is " + location);
+      console.log("city is "+ city);
+      
+     
+    
+      // Assemble dictionary using our keys
+      var dictionary = {
+        "NameLocation": location,
+        "NameCity": city};
+
+      // Send to Pebble
+      Pebble.sendAppMessage(dictionary,
+        function(e) {
+          console.log("Location info sent to Pebble successfully!");
+        },
+        function(e) {
+          console.log("Error sending location info to Pebble!");
+        }
+      );
+    }      
+  );  
+}
+  
 
 
 
@@ -22,7 +67,7 @@ var xhrRequest = function (url, type, callback) {
 function locationSuccess(pos) {
   var settings = JSON.parse(localStorage.getItem('clay-settings')) || {};
   var units = unitsToString(settings.WeatherUnit);
-  var langtouse=translate(navigator.language);
+  var ran=-1*Math.random()*8;
   
   // Construct URL
   //Get JSON from Yahoo Weather
@@ -34,13 +79,7 @@ function locationSuccess(pos) {
       'u=\'' + units + '\'&format=json';   
       console.log("Url is " + urlyahoo);
   
-  // Get JSON from Geolocation
-    var urlgeocities = 'https://query.yahooapis.com/v1/public/yql?q= ' +
-      'select locality1.content,locality2.content from geo.places(1) where ' +
-      'text=\'(' + pos.coords.latitude + ',' + pos.coords.longitude + ')\' and ' +
-// Placeholder  'text= \'(40.398897,-3.710222700000031)\' and ' +
-      'lang=\'' + langtouse +'\'&format=json'; 
-       console.log("Geocities is " + urlgeocities);
+  
 
   // Send request to Yahoo for weather
   xhrRequest(encodeURI(urlyahoo), 'GET', 
@@ -73,48 +112,61 @@ function locationSuccess(pos) {
         }
       );
     }      
-  );
-  
-    // Send request to Yahoo for location
-  xhrRequest(encodeURI(urlgeocities), 'GET', 
-    function(responseText) {
-      // responseText contains a JSON object with location info
-      var json = JSON.parse(responseText);
-      console.log("lang is " + langtouse );
-           
-      // Location
-      var location=json.query.results.place.locality2;
-      var city=json.query.results.place.locality1;
-      console.log("location is " + location);
-      console.log("city is "+ city);
-    
-      // Assemble dictionary using our keys
+  );  
+}
+
+function locationError(err) {
+  console.log("Error requesting weather!");
+  // Send blanks
+  var temperature="";
+  var conditions=49;    //Return a null value
+     // Assemble dictionary using our keys
       var dictionary = {
-        "NameLocation":location,
-        "NameCity":city};
+        "WeatherTemp": temperature,
+        "WeatherCond": conditions};
+  // Send to Pebble
+      Pebble.sendAppMessage(dictionary,
+        function(e) {
+          console.log("Sending blank values for Weather to Pebble successfully!");
+        },
+        function(e) {
+          console.log("Error sending weather info to Pebble!");
+        }
+  );  
+}
+function locationErrorloc(err) {
+  console.log("Error requesting location!");
+  // Send blanks
+    var location="";
+    var city="";
+     // Assemble dictionary using our keys
+    var dictionary = {
+        "NameLocation": location,
+        "NameCity": city};
 
       // Send to Pebble
       Pebble.sendAppMessage(dictionary,
         function(e) {
-          console.log("Location info sent to Pebble successfully!");
+          console.log("Sending blank values for Location to Pebble successfully!");
         },
         function(e) {
           console.log("Error sending location info to Pebble!");
         }
-      );
-    }      
-  );
+  );  
 }
-
-function locationError(err) {
-  console.log("Error requesting location!");
-}
-
 
 function getWeather() {
   navigator.geolocation.getCurrentPosition(
     locationSuccess,
     locationError,
+    {timeout: 15000, maximumAge: 60000}
+  );
+}
+
+function getlocation(){
+    navigator.geolocation.getCurrentPosition(
+    locationSuccessloc,
+    locationErrorloc,
     {timeout: 15000, maximumAge: 60000}
   );
 }
@@ -126,6 +178,7 @@ Pebble.addEventListener('ready',
     
     // Get the initial weather
     getWeather();
+    getlocation();
     }
 );
 
@@ -134,13 +187,16 @@ Pebble.addEventListener('appmessage',
   function(e) {
     console.log("AppMessage received!");
     getWeather();
+    getlocation();
    }                     
 );
 
+// Listen for when the Config app changes
 Pebble.addEventListener('webviewclosed',
   function(e) {
     console.log("Updating config!");
        getWeather();
+       getlocation(); 
     }                     
 );   
                

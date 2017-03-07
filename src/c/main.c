@@ -20,6 +20,10 @@ static int get_angle_for_minutes(int minutes){
   return (floor5*5 * 360) / 60;  
 };
 
+//static bool watchconnected, GPSOK;
+
+
+
 
 ///////////////////////////
 //////Init Configuration///
@@ -36,11 +40,35 @@ static void prv_default_settings() {
   settings.DisplayLoc        =false;
   settings.DisplayDate    =false;
   settings.DisplayLoc    =false;
+  settings.BTOn=true;
+  settings.GPSOn=true;
  }
 ///////////////////////////
 //////End Configuration///
 ///////////////////////////
 
+///BT Connection
+
+static void bluetooth_callback(bool connected) {
+   settings.BTOn=connected;
+ }
+
+static void onreconnection(bool before, bool now){
+  if (!before && now){
+      // Begin dictionary
+    APP_LOG(APP_LOG_LEVEL_DEBUG,"Update info on reconnect at %d",s_minutes);
+      DictionaryIterator *iter;
+      app_message_outbox_begin(&iter);
+      if (!iter) {
+        // Error creating outbound message
+        return;
+      }    
+      int value = 1;
+      dict_write_int(iter, 1, &value, sizeof(int), true);
+      dict_write_end(iter);
+      app_message_outbox_send();    
+  }  
+}
 
 
 
@@ -61,9 +89,10 @@ static void layer_update_proc(Layer *layer, GContext *ctx) {
     int dot_angle = get_angle_dot(i);
     GPoint pos = gpoint_from_polar(frame, 
                                    GOvalScaleModeFitCircle, 
-                                   DEG_TO_TRIGANGLE(dot_angle));
+                                   DEG_TO_TRIGANGLE(dot_angle)
+                                  );
     // Leave the current minute without dot
-    if (i != minute_angle/30){ 
+    if (i != minute_angle/30){
       graphics_fill_circle(ctx, pos, 4);
     }
   }
@@ -75,9 +104,9 @@ static void layer_update_proc(Layer *layer, GContext *ctx) {
   GRect minrect = grect_centered_from_polar(inner, 
                                             GOvalScaleModeFitCircle, 
                                             DEG_TO_TRIGANGLE(minute_angle),
-                                            GSize(36,28));
-  graphics_draw_text(ctx, minutenow, 
-                     FontMinute,minrect, 
+                                            GSize(36,28)
+                                           );
+  graphics_draw_text(ctx, minutenow, FontMinute,minrect, 
                      GTextOverflowModeFill, GTextAlignmentCenter, NULL
                     );
 
@@ -86,10 +115,11 @@ static void layer_update_proc(Layer *layer, GContext *ctx) {
   GRect hourect =grect_centered_from_polar(GRect(bounds.size.h/2,bounds.size.w/2,0,0),
                                            GOvalScaleModeFitCircle,
                                            0, 
-                                           GSize(50,42));
+                                           GSize(50,42)
+                                          );
   char hournow[4];
   snprintf(hournow, sizeof(hournow), "%02d", s_hours);
-  graphics_draw_text(ctx, hournow, 
+  graphics_draw_text(ctx, hournow,
                      FontHour,hourect,
                      GTextOverflowModeFill, GTextAlignmentCenter, NULL
                     );
@@ -113,43 +143,83 @@ static void layer_update_proc(Layer *layer, GContext *ctx) {
                       );
   }
   
-  if (settings.DisplayTemp){
-    // Create temp display
-    GRect temprect=GRect(hourect.origin.x-10,
-                   hourect.origin.y+hourect.size.h+1,
-                   hourect.size.w/2+9,
-                   (inner.size.h/2-hourect.size.h/2)/2);
-    
-    graphics_draw_text(ctx, tempstring, 
-                       FontTemp,temprect,
-                       GTextOverflowModeWordWrap, GTextAlignmentRight, NULL
-                      );
-    
-    // Create condition display
-    GRect condrect=GRect(hourect.origin.x+hourect.size.w/2+1,
-                   hourect.origin.y+hourect.size.h+1,
-                   hourect.size.w/2-1,
-                   (inner.size.h/2-hourect.size.h/2)/2);
-    
-    graphics_draw_text(ctx, condstring, 
-                       FontCond,condrect,
-                       GTextOverflowModeWordWrap, GTextAlignmentRight, NULL
-                      );
-  }
+  //For weather and loc check wheter the app is connected
+  //If it was disconnected fetch new values
+  onreconnection(settings.BTOn, connection_service_peek_pebble_app_connection());
+
+  // Update connection toggle
+  bluetooth_callback(connection_service_peek_pebble_app_connection()); 
   
-  if (settings.DisplayLoc) 
-   {
-    GRect locrect=GRect(hourect.origin.x-17, 
-                        hourect.origin.y-20,
-                        hourect.size.w+34, 
-                        25);
-      graphics_draw_text(ctx, citistring, 
-      FontCiti, 
-      locrect,
-      GTextOverflowModeWordWrap, GTextAlignmentCenter, NULL
+  //If Bluetooth off and some info was requested display warning
+  if (!settings.BTOn){
+    if (settings.DisplayLoc || settings.DisplayTemp){
+      GRect warnrect=GRect(hourect.origin.x-17, 
+                          hourect.origin.y-20,
+                          hourect.size.w+34, 
+                          25);
+      graphics_draw_text(ctx, "BT off",
+                         FontCiti, 
+                         warnrect,
+                         GTextOverflowModeWordWrap, GTextAlignmentCenter, NULL
                         );
+    }    
   }
+  //If connected but GPS off then display warning
+  else {
+    if (!settings.GPSOn){
+      if (settings.DisplayLoc || settings.DisplayTemp){
+        GRect warnrect=GRect(hourect.origin.x-17, 
+                             hourect.origin.y-20,
+                             hourect.size.w+34, 
+                             25);
+        graphics_draw_text(ctx, "GPS fault", 
+                           FontCiti, 
+                           warnrect,
+                           GTextOverflowModeWordWrap, GTextAlignmentCenter, NULL
+                          );
+      }    
+    }
+    // If BT on and GPS on display according with preferences
+    else{
+      //If weather active create text
+      if (settings.DisplayTemp){
+        // Create temp display
+        GRect temprect=GRect(hourect.origin.x-10,
+                             hourect.origin.y+hourect.size.h+1,
+                             hourect.size.w/2+9,
+                             (inner.size.h/2-hourect.size.h/2)/2);
+        graphics_draw_text(ctx, tempstring, 
+                           FontTemp,temprect,
+                           GTextOverflowModeWordWrap, GTextAlignmentRight, NULL
+                          );
+        // Create condition display
+        GRect condrect=GRect(hourect.origin.x+hourect.size.w/2+1,
+                             hourect.origin.y+hourect.size.h+1,
+                             hourect.size.w/2-1,
+                             (inner.size.h/2-hourect.size.h/2)/2);
+        graphics_draw_text(ctx, condstring, 
+                           FontCond,condrect,
+                           GTextOverflowModeWordWrap, GTextAlignmentRight, NULL
+                          );
+      }
+      //If location was selected display
+      if (settings.DisplayLoc){
+        GRect locrect=GRect(hourect.origin.x-17, 
+                            hourect.origin.y-20,
+                            hourect.size.w+34, 
+                            25);
+        graphics_draw_text(ctx, citistring, 
+                           FontCiti, locrect,
+                           GTextOverflowModeWordWrap, GTextAlignmentCenter, NULL
+                          );
+      }      
+    }    
+  }
+  //End update layer
 }
+  
+ 
+
 
 /////////////////////////////////////////
 ////Init: Handle Settings and Weather////
@@ -186,29 +256,51 @@ static void prv_inbox_received_handler(DictionaryIterator *iter, void *context) 
     settings.DotsColor = GColorFromHEX(dt_color_t->value->int32);
   }  
   
+  
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "At init temp is %s Cond is %s and City is %s", tempstring,condstring,citistring);
+  
+
+  
   // Weather Cond
   Tuple *wcond_t=dict_find(iter, MESSAGE_KEY_WeatherCond );
+
   if (wcond_t){ 
     get_conditions_yahoo((int)wcond_t->value->int32, condstring);
+    APP_LOG(APP_LOG_LEVEL_DEBUG,"Now cond is %s",condstring);
   }
   
    // Weather Temp
   Tuple *wtemp_t=dict_find(iter, MESSAGE_KEY_WeatherTemp);
-  if (wtemp_t){ 
+ if (wtemp_t){ 
     snprintf(tempstring, sizeof(tempstring), "%s", wtemp_t->value->cstring);
+      APP_LOG(APP_LOG_LEVEL_DEBUG,"Now temp is %s",tempstring);
   }
   
   // Location
-  Tuple *location_t=dict_find(iter,MESSAGE_KEY_NameLocation);
-  Tuple *city_t=dict_find(iter,MESSAGE_KEY_NameCity);
-  if (location_t){ 
-    snprintf(citistring, sizeof(citistring), "%s", location_t->value->cstring);
-    APP_LOG(APP_LOG_LEVEL_DEBUG,"Now location is %s",citistring);
+  Tuple *neigh_t=dict_find(iter, MESSAGE_KEY_NameLocation);
+  Tuple *citi_t=dict_find(iter,MESSAGE_KEY_NameCity);
+  
+  if (neigh_t){
+    snprintf(citistring,sizeof(citistring),"%s",neigh_t->value->cstring);
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Citistring is neighborhood %s", citistring);
   }
-  else if (city_t){
-    snprintf(citistring, sizeof(citistring), "%s", city_t->value->cstring);
-    APP_LOG(APP_LOG_LEVEL_DEBUG,"Now location is %s",citistring);
+  
+  else if (citi_t){
+    snprintf(citistring,sizeof(citistring),"%s",citi_t->value->cstring);
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Citistring is city %s", citistring);
   }
+  int lens=strlen(citistring);
+  // Evaluate GPS status                                                                                                                      
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "Len citisting is %d", lens);
+  if (lens==0){
+    APP_LOG(APP_LOG_LEVEL_DEBUG,"GPS disconnected at %d",s_minutes);
+    settings.GPSOn=false;
+  }
+  else {
+    settings.GPSOn=true;
+    APP_LOG(APP_LOG_LEVEL_DEBUG,"GPS active at %d",s_minutes);
+  };
+    
   
   // Get display handlers
   Tuple *disdate_t=dict_find(iter,MESSAGE_KEY_DisplayDate);
@@ -252,7 +344,7 @@ static void window_load(Window *window) {
 
   s_canvas = layer_create(bounds);
   layer_set_update_proc(s_canvas, layer_update_proc);
-  layer_add_child(window_layer, s_canvas);
+  layer_add_child(window_layer, s_canvas);  
 }
 
 static void window_unload(Window *window) {
@@ -305,7 +397,7 @@ static void init() {
   prv_load_settings();
    // Listen for AppMessages
   app_message_register_inbox_received(prv_inbox_received_handler);
-  app_message_open(128, 128);
+  app_message_open(256, 256);
   
   // Load Fonts
   FontHour  =fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_GBOLD_34));
@@ -316,7 +408,12 @@ static void init() {
   FontCiti  =fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_GLIGHT_10));
   
   main_window_push();
-  tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);  
+  
+  // Register with Event Services
+  tick_timer_service_subscribe(MINUTE_UNIT, tick_handler); 
+  connection_service_subscribe((ConnectionHandlers) {
+    .pebble_app_connection_handler = bluetooth_callback
+  });
 }
 
 static void deinit() {
