@@ -48,8 +48,8 @@ ClaySettings settings;
 static void prv_default_settings() { 
   settings.BackgroundColor = GColorWhite;
   settings.ForegroundColor  = GColorOxfordBlue;
-  settings.DotsColor        = GColorPictonBlue;
-  settings.BatteryColor      =GColorRed;
+  settings.DotsColor        = GColorBlueMoon;
+  settings.BatteryColor      =GColorPictonBlue;
   settings.WeatherUnit       = false;
   settings.WeatherCond       =0;
   settings.DisplayLoc        =false;
@@ -97,6 +97,10 @@ static void layer_update_proc(Layer *layer, GContext *ctx) {
     
     graphics_context_set_stroke_width(ctx, 4);
     graphics_context_set_stroke_color(ctx, settings.BatteryColor);
+    //Battery below 20 is set red
+    if (s_battery_level<=20){
+      graphics_context_set_stroke_color(ctx, GColorRed);
+    }
     graphics_draw_arc(ctx, 
                       frame, 
                       GOvalScaleModeFitCircle, 

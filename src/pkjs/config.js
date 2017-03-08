@@ -39,7 +39,7 @@ module.exports = [
     "items": [ 
       {
         "type": "heading",
-        "defaultValue": "Grpahics settings"
+        "defaultValue": "Graphics settings"
       },
        {
         "type": "toggle",
@@ -50,20 +50,22 @@ module.exports = [
       {
         "type": "color",
         "messageKey": "DotsColor",
-        "defaultValue": "0x55AAFF",
+        "defaultValue": "0x0055FF",
         "label": "Dots Color"
       },  
        {
         "type": "toggle",
         "messageKey": "DisplayBattery",
         "label": "Display Battery Level",
-        "defaultValue": false      
+        "defaultValue": false,
+        "description": "Displayed as a clockwise arc near the bezel"
       },
       {
         "type": "color",
         "messageKey": "BatteryColor",
-        "defaultValue": "0xFF0000",
-        "label": "Battery Bar Color"
+        "defaultValue": "0x55AAFF",
+        "label": "Battery Bar Color",
+        "description": "On battery below 20% the color switchs to red"
       }    
     ]
  },
