@@ -23,11 +23,23 @@
             "DisplayDate",
             "DisplayTemp",
             "DisplayLoc",
-            "NameCity"
+            "NameCity",
+            "DisplayDots",
+            "DisplayBattery",
+            "BatteryColor",
+            "WeatOK",
+            "LocOK"
         ],
         "projectType": "native",
         "resources": {
             "media": [
+                {
+                    "characterRegex": "[a-b]",
+                    "file": "fonts/ConnSymbol.ttf",
+                    "name": "FONT_SYMBOL_16",
+                    "targetPlatforms": null,
+                    "type": "font"
+                },
                 {
                     "file": "images/sfera.png",
                     "menuIcon": true,
@@ -42,9 +54,8 @@
                     "type": "font"
                 },
                 {
-                    "characterRegex": "[0-9 a-z A-Z]",
                     "file": "fonts/Gotham Light.otf",
-                    "name": "FONT_GLIGHT_12",
+                    "name": "FONT_GLIGHT_10",
                     "targetPlatforms": null,
                     "type": "font"
                 },
@@ -55,15 +66,9 @@
                     "type": "font"
                 },
                 {
+                    "characterRegex": "[0-9 a-z A-Z]",
                     "file": "fonts/Gotham Light.otf",
-                    "name": "FONT_GLIGHT_10",
-                    "targetPlatforms": null,
-                    "type": "font"
-                },
-                {
-                    "characterRegex": "[0-9]",
-                    "file": "fonts/Gotham Bold.otf",
-                    "name": "FONT_GBOLD_34",
+                    "name": "FONT_GLIGHT_12",
                     "targetPlatforms": null,
                     "type": "font"
                 },
@@ -71,6 +76,13 @@
                     "characterRegex": "[0-9]",
                     "file": "fonts/Gotham Bold.otf",
                     "name": "FONT_GBOLD_22",
+                    "targetPlatforms": null,
+                    "type": "font"
+                },
+                {
+                    "characterRegex": "[0-9]",
+                    "file": "fonts/Gotham Bold.otf",
+                    "name": "FONT_GBOLD_34",
                     "targetPlatforms": null,
                     "type": "font"
                 }
