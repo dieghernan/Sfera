@@ -8,7 +8,7 @@ static GFont FontHour, FontMinute,FontDate, FontTemp, FontCond, FontCiti, FontSy
 char tempstring[44], condstring[44], citistring[44];
 static Window *s_window;
 static Layer *s_canvas;
-static int s_hours, s_minutes, s_weekday, s_day,s_battery_level,s_loop;
+static int s_hours, s_minutes, s_weekday, s_day,s_battery_level,s_loop, s_countdown;
 static int32_t get_angle_dot(int dot) {  
   // Progress through 12 hours, out of 360 degrees
   return (dot * 360) / 12;
@@ -451,9 +451,16 @@ void main_window_update(int hours, int minutes, int weekday, int day) {
 static void tick_handler(struct tm *time_now, TimeUnits changed) {
   main_window_update(time_now->tm_hour, time_now->tm_min, time_now->tm_wday, time_now->tm_mday);
   APP_LOG(APP_LOG_LEVEL_DEBUG, "Tick at %d", time_now->tm_min);
- 
-   // Get weather update every 30 minutes
-  if(time_now->tm_min % 30 == 0) {
+ if (s_countdown==0){
+   //Reset
+   s_countdown=30;
+ }
+else {
+  s_countdown=s_countdown-1;  
+}
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "Countdown to update %d", s_countdown);
+   // Get weather update every 30 minutes and extra request 5 minutes earlier
+  if(s_countdown== 0 || s_countdown==5) {
     if (settings.DisplayTemp || settings.DisplayLoc){
       APP_LOG(APP_LOG_LEVEL_DEBUG, "Update weather at %d", time_now->tm_min);
       request_watchjs();    
@@ -464,7 +471,7 @@ static void tick_handler(struct tm *time_now, TimeUnits changed) {
   
   if (!settings.GPSOn){
     if (settings.DisplayTemp || settings.DisplayLoc){
-      if(time_now->tm_min % 10 == 0){
+      if(s_countdown % 10 == 0){
         APP_LOG(APP_LOG_LEVEL_DEBUG, "Attempt to request GPS on %d", time_now->tm_min);
         request_watchjs();        
       }      
@@ -477,6 +484,7 @@ static void init() {
    // Listen for AppMessages
   //Starting loop at 0
   s_loop=0;
+  s_countdown=30;
   //Clean vars
   strcpy(tempstring, "");
   strcpy(condstring, "");
