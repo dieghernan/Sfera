@@ -3,45 +3,39 @@
 #include "weekday.h"
 #include "weathericon.h"
 
-
+//Static and initial vars
 static GFont FontHour, FontMinute,FontDate, FontTemp, FontCond, FontCiti, FontSymbol;
 char tempstring[44], condstring[44], citistring[44];
 static Window *s_window;
 static Layer *s_canvas;
-static int s_hours, s_minutes, s_weekday, s_day,s_battery_level;
-
+static int s_hours, s_minutes, s_weekday, s_day,s_battery_level,s_loop;
 static int32_t get_angle_dot(int dot) {  
   // Progress through 12 hours, out of 360 degrees
   return (dot * 360) / 12;
 }
-
 static int get_angle_for_minutes(int minutes){
   int floor5=minutes/5;
   return (floor5*5 * 360) / 60;  
 };
-
 static int get_angle_for_battery(int battery){
   int floor30=(100-battery)*360/3000;
   return (floor30*30);  
 };
 
-
-//static bool watchconnected, GPSOK;
+// Callback for js request
 void request_watchjs(){
-      // Begin dictionary
-      DictionaryIterator *iter;
-      app_message_outbox_begin(&iter);
-      // Add a key-value pair
-      dict_write_uint8(iter, 0, 0);
-      // Send the message!
-      app_message_outbox_send(); 
+  //Starting loop at 0
+  s_loop=0;
+  // Begin dictionary
+  DictionaryIterator *iter;
+  app_message_outbox_begin(&iter);
+  // Add a key-value pair
+  dict_write_uint8(iter, 0, 0);
+  // Send the message!
+  app_message_outbox_send(); 
 }
 
-
-
-///////////////////////////
 //////Init Configuration///
-///////////////////////////
 //Init Clay
 ClaySettings settings;
 // Initialize the default settings
@@ -60,25 +54,22 @@ static void prv_default_settings() {
   settings.BTOn=true;
   settings.GPSOn=false;
  }
-///////////////////////////
 //////End Configuration///
 ///////////////////////////
 
 ///BT Connection
-
 static void bluetooth_callback(bool connected) {
    settings.BTOn=connected;
  }
-
 static void onreconnection(bool before, bool now){
   if (!before && now){
     APP_LOG(APP_LOG_LEVEL_DEBUG, "BT reconnected, requesting weather at %d", s_minutes);
+  
      request_watchjs();  
   }  
 }
 
-
-
+//Update main layer
 static void layer_update_proc(Layer *layer, GContext *ctx) {
   // Colors
   graphics_context_set_text_color(ctx, settings.ForegroundColor); 
@@ -267,9 +258,7 @@ static void layer_update_proc(Layer *layer, GContext *ctx) {
     }    
   }
   //End update layer
-}
-  
- 
+} 
 
 
 /////////////////////////////////////////
@@ -284,12 +273,20 @@ static void prv_load_settings() {
 }
 // Save the settings to persistent storage
 static void prv_save_settings() {
-  persist_write_data(SETTINGS_KEY, &settings, sizeof(settings));
+   persist_write_data(SETTINGS_KEY, &settings, sizeof(settings));
   // Update date
 }
 // Handle the response from AppMessage
 static void prv_inbox_received_handler(DictionaryIterator *iter, void *context) {
- 
+ s_loop=s_loop+1;
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "Loop is %d", s_loop);
+  if (s_loop==1){
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Cleaning vars in loop %d", s_loop);
+      //Clean vars  
+        strcpy(tempstring, "");
+        strcpy(condstring, "");
+        strcpy(citistring, "");
+  }
   // Background Color
   Tuple *bg_color_t = dict_find(iter, MESSAGE_KEY_BackgroundColor);
   if (bg_color_t) {
@@ -316,13 +313,14 @@ static void prv_inbox_received_handler(DictionaryIterator *iter, void *context) 
   
   
   //Control of data from http
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "At init temp is %s Cond is %s and City is %s", tempstring,condstring,citistring);
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "At beggining loop %d temp is %s Cond is %s and City is %s",s_loop, tempstring,condstring,citistring);
     // Weather Cond
   Tuple *wcond_t=dict_find(iter, MESSAGE_KEY_WeatherCond );
 
   if (wcond_t){ 
     get_conditions_yahoo((int)wcond_t->value->int32, condstring);
     APP_LOG(APP_LOG_LEVEL_DEBUG,"Now cond is %s",condstring);
+    APP_LOG(APP_LOG_LEVEL_DEBUG,"Updated Cond at loop %d",s_loop);
   }
   
    // Weather Temp
@@ -339,34 +337,27 @@ static void prv_inbox_received_handler(DictionaryIterator *iter, void *context) 
   if (neigh_t){
     snprintf(citistring,sizeof(citistring),"%s",neigh_t->value->cstring);
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Citistring is neighborhood %s", citistring);
+     APP_LOG(APP_LOG_LEVEL_DEBUG,"Updated Neigh at loop %d",s_loop);
   }
   
   else if (citi_t){
     snprintf(citistring,sizeof(citistring),"%s",citi_t->value->cstring);
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Citistring is city %s", citistring);
+    APP_LOG(APP_LOG_LEVEL_DEBUG,"Updated City at loop %d",s_loop);
   }
   
   //Control of data gathered for http
-    Tuple *weath_ok=dict_find(iter, MESSAGE_KEY_WeatOK);
-  if (weath_ok){
-    if (strcmp(tempstring, "") !=0 && strcmp(condstring, "") !=0 && strcmp(citistring, "")){
-      APP_LOG(APP_LOG_LEVEL_DEBUG,"GPS fully working at %d",s_minutes);
-      settings.GPSOn=true;
-    }
-    else {
-      APP_LOG(APP_LOG_LEVEL_DEBUG,"Missing a part from GPS at %d  GPS False",s_minutes);
-      settings.GPSOn=false;      
-    }    
-  }
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "After loop %d temp is %s Cond is %s and City is %s", s_loop,tempstring,condstring,citistring);
+  
+  if (strcmp(tempstring, "") !=0 && strcmp(condstring, "") !=0 && strcmp(citistring, "")){
+    APP_LOG(APP_LOG_LEVEL_DEBUG,"GPS fully working at loop %d",s_loop);
+    settings.GPSOn=true;
+  }  
   else {
-    APP_LOG(APP_LOG_LEVEL_DEBUG,"No answer from Phone at %d, clearing vars",s_minutes);
+    APP_LOG(APP_LOG_LEVEL_DEBUG,"MIssing info at loop %d, GPS false",s_loop);
     settings.GPSOn=false;
-    strcpy(tempstring, "");
-    strcpy(condstring, "");
-    strcpy(citistring, "");
   }
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "Finished temp is %s Cond is %s and City is %s", tempstring,condstring,citistring);
-  //ENd data gathered
+  //End data gathered
   
   // Get display handlers
   Tuple *disdate_t=dict_find(iter,MESSAGE_KEY_DisplayDate);
@@ -417,9 +408,7 @@ static void prv_inbox_received_handler(DictionaryIterator *iter, void *context) 
   prv_save_settings();
  
 }
-
-
-
+//Load main layer
 static void window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
@@ -461,7 +450,7 @@ void main_window_update(int hours, int minutes, int weekday, int day) {
 
 static void tick_handler(struct tm *time_now, TimeUnits changed) {
   main_window_update(time_now->tm_hour, time_now->tm_min, time_now->tm_wday, time_now->tm_mday);
-  
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "Tick at %d", time_now->tm_min);
  
    // Get weather update every 30 minutes
   if(time_now->tm_min % 30 == 0) {
@@ -480,16 +469,19 @@ static void tick_handler(struct tm *time_now, TimeUnits changed) {
         request_watchjs();        
       }      
     }
-  }
-  
-  
-    
-  
+  }  
 }
 
 static void init() {
   prv_load_settings();
    // Listen for AppMessages
+  //Starting loop at 0
+  s_loop=0;
+  //Clean vars
+  strcpy(tempstring, "");
+  strcpy(condstring, "");
+  strcpy(citistring, "");
+  //Register and open
   app_message_register_inbox_received(prv_inbox_received_handler);
   app_message_open(256, 256);
   

@@ -26,9 +26,7 @@
             "NameCity",
             "DisplayDots",
             "DisplayBattery",
-            "BatteryColor",
-            "WeatOK",
-            "LocOK"
+            "BatteryColor"
         ],
         "projectType": "native",
         "resources": {

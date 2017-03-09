@@ -15,16 +15,19 @@ var xhrRequest = function (url, type, callback) {
 };
 
 function locationSuccess(pos) {
+  var lat=pos.coords.latitude;
+  var lon= pos.coords.longitude;
+  //var lon=-1*Math.random()*8;
   var settings = JSON.parse(localStorage.getItem('clay-settings')) || {};
   var units = unitsToString(settings.WeatherUnit);
-  //var ran=-1*Math.random()*8;
+
   
   // Construct URL
   //Get JSON from Yahoo Weather
    var urlyahoo = 'https://query.yahooapis.com/v1/public/yql?q=select item.condition, ' +
       'location from weather.forecast(1) where woeid in ' +
       '(select woeid from geo.places(1) where ' +
-      'text=\'(' + pos.coords.latitude + ',' + pos.coords.longitude + ')\') and ' +
+      'text=\'(' + lat + ',' + lon + ')\') and ' +
       // Placeholder 'text= \'(40.398897,-3.710222700000031)\') and ' +
       'u=\'' + units + '\'&format=json';   
       console.log("WeatherUrl= " + urlyahoo);
@@ -42,12 +45,10 @@ function locationSuccess(pos) {
       // Conditions item.condition.code
       var conditions = Math.round(json.query.results.channel.item.condition.code);      
       console.log("Conditions are " + conditions);
-      var weatok=1;
       // Assemble dictionary using our keys
       var dictionary = {
         "WeatherTemp": temperature,
-        "WeatherCond": conditions,
-        "WeatOK":weatok
+        "WeatherCond": conditions
       };
       // Send to Pebble
       Pebble.sendAppMessage(dictionary,
@@ -65,7 +66,7 @@ function locationSuccess(pos) {
   var langtouse=translate(navigator.language);
   var urlgeoplaces = 'https://query.yahooapis.com/v1/public/yql?q=' +
       'select locality1.content,locality2.content from geo.places(1) where ' +
-      'text=\'(' + pos.coords.latitude + ',' + pos.coords.longitude + ')\' and ' +
+      'text=\'(' + lat + ',' + lon + ')\' and ' +
       // Placeholder  'text= \'(40.398897,-3.710222700000031)\' and ' +
       'lang=\'' + langtouse +'\'&format=json'; 
       console.log("GeoPlacesUrl= " + urlgeoplaces);
@@ -81,12 +82,10 @@ function locationSuccess(pos) {
       console.log("location is " + location);
       var city=jsonloc.query.results.place.locality1; 
       console.log("city is "+ city);
-      var GPSok=1;
       // Assemble dictionary using our keys
       var dictionary = {
         "NameLocation": location,
-        "NameCity": city,
-        "WeatOK":GPSok
+        "NameCity": city
       };
       // Send to Pebble
       Pebble.sendAppMessage(dictionary,
@@ -101,19 +100,32 @@ function locationSuccess(pos) {
   );  
 }
 function locationError(err) {
-  console.log("Error requesting weather!");
+  console.log("Error requesting geolocation!");
+  //Send response null
+  var location="";
+  // Assemble dictionary using our keys
+      var dictionary = {
+        "NameLocation": location};
+       Pebble.sendAppMessage(dictionary,
+        function(e) {
+          console.log("Null key sent to Pebble successfully!");
+        },
+        function(e) {
+          console.log("Null key error sending to Pebble!");
+        }
+                            );
 }
 function getinfo() {
   navigator.geolocation.getCurrentPosition(
     locationSuccess,
     locationError,
-    {timeout: 15000, maximumAge: 1}
+    {enableHighAccuracy:true,timeout: 15000, maximumAge: 1000}
   );
 }
 // Listen for when the watchface is opened
 Pebble.addEventListener('ready', 
   function(e) {
-    console.log("PebbleKit JS ready!");
+    console.log("Starting Watchface!");
     // Get the initial weather
     getinfo();
     }
@@ -122,7 +134,7 @@ Pebble.addEventListener('ready',
 // Listen for when an AppMessage is received
 Pebble.addEventListener('appmessage',
   function(e) {
-    console.log("AppMessage received!");
+    console.log("Requesting geoposition!");
     getinfo();
    }                     
 );
