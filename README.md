@@ -11,7 +11,7 @@
 ### Take your pick
  * Date - Get the weekday based on the language set on your Pebble.
  * Dots as minute markers - choose your color
- * Battery level displayed beautifully as an arc near de bezel. Choose your color and below 20% it turns red!
+ * Battery level displayed beautifully as an arc near the bezel. Choose your color and below 20% it turns red!
  * Weather: Current conditions on °c or °f.
  * Location: Maximum accuracy, displays the neighbourhood when available, instead of city.
    * *Munich or München? Londres of London? Sfera does the job for you! Get the location name translated to the language you use on your phone settings.*
