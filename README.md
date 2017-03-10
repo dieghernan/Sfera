@@ -1,14 +1,12 @@
-
-## Introducing Sfera
 ![Banner](https://raw.githubusercontent.com/dieghernan/Sfera/master/assets/SferaBanner.png)
 
 **Sfera** for Pebble Time Round is a highly customizable watchface that gets the most of the smartwatch capabilities. Set your preferences and enjoy this beautifully designed watchface.
 
-## Features
+# Features
 * Display centered hour
 * Minute display based on analog movement
 
-### Take your pick
+## Take your pick
  * Date - Get the weekday based on the language set on your Pebble.
  * Dots as minute markers - choose your color
  * Battery level displayed beautifully as an arc near the bezel. Choose your color and below 20% it turns red!
@@ -18,7 +16,7 @@
  * On Bluetooth disconnected displays ![BTDis](https://raw.githubusercontent.com/dieghernan/Sfera/master/assets/BTDisconnectIcon.png)
  * On GPS requested but disconnected displays ![GPSDis](https://raw.githubusercontent.com/dieghernan/Sfera/master/assets/GPSDisconnectIcon.png)
     
-### Internationalization
+## Internationalization
 Autotranslating of weekday and location supported for:
 * English 
 * Spanish
@@ -27,10 +25,10 @@ Autotranslating of weekday and location supported for:
 * Portuguese
 * Italian
 
-## Screenshots
+# Screenshots
 ![GIF](https://raw.githubusercontent.com/dieghernan/Sfera/master/assets/SferaGif.GIF)
 
-## Attributions
+# Attributions
 Fonts in use: 
  * [Weather Icons](https://erikflowers.github.io/weather-icons) by Eric Flowers, modified and fitted to regular alphabet, instead of Unicode values.
  * Custom font for icons created via [Fontastic](http://fontastic.me/).
@@ -38,7 +36,7 @@ Fonts in use:
   
 [![banner](https://poweredby.yahoo.com/purple.png)](https://www.yahoo.com/?ilc=401)
 
-## License
+# License
 Developed under license [MIT](https://raw.githubusercontent.com/dieghernan/Sfera/master/LICENSE).
 
 #### Made in Madrid, Spain
