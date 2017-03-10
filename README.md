@@ -12,7 +12,7 @@
   * Dots as minute markers - choose your color
   * Battery level displayed beautifully as an arc near de bezel. Choose your color and below 20% it turns red!
   * Weather: Current conditions on °c or °f.
-  * Location: Maximum accuracy, displays the neighborhood when available, instead of city.
+  * Location: Maximum accuracy, displays the neighbourhood when available, instead of city.
     * *Munich or München? Londres of London? Sfera does the job for you! Get the location name translated to the language you use on your phone settings.*
    * On Bluetooth disconnected displays ![BTDis](https://raw.githubusercontent.com/dieghernan/Sfera/master/assets/BTDisconnectIcon.png)
    * On GPS requested but disconnected displays ![GPSDis](https://raw.githubusercontent.com/dieghernan/Sfera/master/assets/GPSDisconnectIcon.png) 
