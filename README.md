@@ -33,7 +33,7 @@ Fonts in use:
  * Custom font for icons created via [Fontastic](http://fontastic.me/).
  * [Gotham Fonts](http://fontsgeek.com/search?q=gotham) downloaded from [fontsgeek.com](http://fontsgeek.com)
   
-  [![banner](https://poweredby.yahoo.com/purple.png)](https://www.yahoo.com/?ilc=401)
+[![banner](https://poweredby.yahoo.com/purple.png)](https://www.yahoo.com/?ilc=401)
 
 ## License
 Developed under license [MIT](https://raw.githubusercontent.com/dieghernan/Sfera/master/LICENSE).
