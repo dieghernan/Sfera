@@ -33,13 +33,6 @@
         "resources": {
             "media": [
                 {
-                    "characterRegex": "[a-b]",
-                    "file": "fonts/ConnSymbol.ttf",
-                    "name": "FONT_SYMBOL_16",
-                    "targetPlatforms": null,
-                    "type": "font"
-                },
-                {
                     "file": "images/sfera.png",
                     "menuIcon": true,
                     "name": "sfera",
@@ -53,8 +46,9 @@
                     "type": "font"
                 },
                 {
+                    "characterRegex": "[0-9 a-z A-Z]",
                     "file": "fonts/Gotham Light.otf",
-                    "name": "FONT_GLIGHT_10",
+                    "name": "FONT_GLIGHT_12",
                     "targetPlatforms": null,
                     "type": "font"
                 },
@@ -65,9 +59,15 @@
                     "type": "font"
                 },
                 {
-                    "characterRegex": "[0-9 a-z A-Z]",
                     "file": "fonts/Gotham Light.otf",
-                    "name": "FONT_GLIGHT_12",
+                    "name": "FONT_GLIGHT_10",
+                    "targetPlatforms": null,
+                    "type": "font"
+                },
+                {
+                    "characterRegex": "[0-9]",
+                    "file": "fonts/Gotham Bold.otf",
+                    "name": "FONT_GBOLD_34",
                     "targetPlatforms": null,
                     "type": "font"
                 },
@@ -79,9 +79,9 @@
                     "type": "font"
                 },
                 {
-                    "characterRegex": "[0-9]",
-                    "file": "fonts/Gotham Bold.otf",
-                    "name": "FONT_GBOLD_34",
+                    "characterRegex": "[a-b]",
+                    "file": "fonts/ConnSymbol.ttf",
+                    "name": "FONT_SYMBOL_16",
                     "targetPlatforms": null,
                     "type": "font"
                 }
@@ -91,7 +91,7 @@
         "targetPlatforms": [
             "chalk"
         ],
-        "uuid": "751fca17-11b9-4e74-aadf-a2424f8a8454",
+        "uuid": "be15d828-8605-4bf0-a92c-c1902bdce99d",
         "watchapp": {
             "watchface": true
         }
