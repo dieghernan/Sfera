@@ -46,6 +46,7 @@ static void prv_default_settings() {
   settings.BatteryColor      =GColorPictonBlue;
   settings.WeatherUnit       = false;
   settings.WeatherCond       =0;
+  settings.UpSlider          =30;
   settings.DisplayLoc        =false;
   settings.DisplayDate    =false;
   settings.DisplayLoc    =false;
@@ -287,6 +288,7 @@ static void prv_inbox_received_handler(DictionaryIterator *iter, void *context) 
         strcpy(condstring, "");
         strcpy(citistring, "");
   }
+    
   // Background Color
   Tuple *bg_color_t = dict_find(iter, MESSAGE_KEY_BackgroundColor);
   if (bg_color_t) {
@@ -360,6 +362,11 @@ static void prv_inbox_received_handler(DictionaryIterator *iter, void *context) 
   //End data gathered
   
   // Get display handlers
+  Tuple *frequpdate=dict_find(iter, MESSAGE_KEY_UpSlider);
+  if (frequpdate){
+    settings.UpSlider=(int)frequpdate->value->int32;
+  }
+  
   Tuple *disdate_t=dict_find(iter,MESSAGE_KEY_DisplayDate);
   if (disdate_t){
     if (disdate_t->value->int32==0){
@@ -453,7 +460,7 @@ static void tick_handler(struct tm *time_now, TimeUnits changed) {
   APP_LOG(APP_LOG_LEVEL_DEBUG, "Tick at %d", time_now->tm_min);
  if (s_countdown==0){
    //Reset
-   s_countdown=30;
+   s_countdown=settings.UpSlider;
  }
 else {
   s_countdown=s_countdown-1;  
@@ -467,13 +474,15 @@ else {
     }  
 	}
   
-  //If GPS was off request weather every 10 minutes
+  //If GPS was off request weather every 15 minutes
   
   if (!settings.GPSOn){
     if (settings.DisplayTemp || settings.DisplayLoc){
-      if(s_countdown % 10 == 0){
-        APP_LOG(APP_LOG_LEVEL_DEBUG, "Attempt to request GPS on %d", time_now->tm_min);
-        request_watchjs();        
+      if (settings.UpSlider>15){
+        if(s_countdown % 15 == 0){
+          APP_LOG(APP_LOG_LEVEL_DEBUG, "Attempt to request GPS on %d", time_now->tm_min);
+          request_watchjs();    
+        }
       }      
     }
   }  
@@ -484,7 +493,7 @@ static void init() {
    // Listen for AppMessages
   //Starting loop at 0
   s_loop=0;
-  s_countdown=30;
+  s_countdown=settings.UpSlider;
   //Clean vars
   strcpy(tempstring, "");
   strcpy(condstring, "");

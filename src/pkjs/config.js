@@ -98,6 +98,15 @@ module.exports = [
         "defaultValue": false,
         "description": "When available, neighborhood is displayed instead of city"
       },
+      {
+        "type": "slider",
+        "messageKey": "UpSlider",
+        "defaultValue": 30,
+        "label": "Update frequency (minutes)",
+        "description": "Weather and Location will update as frequently as you want. Note that more frequent requests will drain your phone battery faster  ",
+        "min": 15,
+        "max": 120,
+        "step": 15},
     ]
  },
  //Yahoo disclaimer
