@@ -16,7 +16,7 @@
  * Location: Maximum accuracy, displays the neighbourhood when available, instead of city.
    * *Munich or München? Londres of London? Sfera does the job for you! Get the location name translated to the language you use on your phone settings.*
  * On Bluetooth disconnected displays ![BTDis](https://raw.githubusercontent.com/dieghernan/Sfera/master/assets/BTDisconnectIcon.png)
- * On GPS requested but disconnected displays ![GPSDis](https://raw.githubusercontent.com/dieghernan/Sfera/master/assets/GPSDisconnectIcon.png) 
+ * On GPS requested but disconnected displays ![GPSDis](https://raw.githubusercontent.com/dieghernan/Sfera/master/assets/GPSDisconnectIcon.png)
     
 ### Internationalization
 Autotranslating of weekday and location supported for:
@@ -26,7 +26,10 @@ Autotranslating of weekday and location supported for:
 * French
 * Portuguese
 * Italian
- 
+
+## Screenshots
+![GIF](https://raw.githubusercontent.com/dieghernan/Sfera/master/assets/SferaGif.GIF)
+
 ## Attributions
 Fonts in use: 
  * [Weather Icons](https://erikflowers.github.io/weather-icons) by Eric Flowers, modified and fitted to regular alphabet, instead of Unicode values.
