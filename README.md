@@ -8,8 +8,7 @@
 * Display centered hour
 * Minute display based on analog movement
 
-###Take your pick
-
+### Take your pick
  * Date - Get the weekday based on the language set on your Pebble.
  * Dots as minute markers - choose your color
  * Battery level displayed beautifully as an arc near de bezel. Choose your color and below 20% it turns red!
