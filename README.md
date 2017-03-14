@@ -29,6 +29,10 @@ Autotranslating of weekday and location supported for:
 * Portuguese
 * Italian
 
+# Future developments
+- [x] 12/24h mode
+- [ ] Night theme
+
 # Screenshots
 ![GIF](https://raw.githubusercontent.com/dieghernan/Sfera/master/assets/SferaGif.GIF)
 
