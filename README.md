@@ -8,6 +8,7 @@
 # Features
 * Display centered hour
 * Minute display based on analog movement
+* Autodetection of 12h/24h based on your watch settings
 
 ## Take your pick
  * Date - Get the weekday based on the language set on your Pebble.
