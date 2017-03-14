@@ -22,6 +22,41 @@ static int get_angle_for_battery(int battery){
   return (floor30*30);  
 };
 
+static int hourtodraw(bool hourformat, int hournow){
+  if (hourformat){
+    return hournow;    
+  }
+  else {
+    if (hournow==0){
+      return 12;      
+    }
+    else if(hournow<=12){
+      return hournow;
+    }
+    else {
+      return hournow-12;
+    }
+  }
+};
+
+static int xdaterect(bool is24, GRect hourect, GRect inner, GRect minrect){
+  if (is24){
+    return hourect.origin.x+hourect.size.w+1;
+  }
+  else {
+    return hourect.origin.x-(inner.size.w/2-hourect.size.w/2-minrect.size.w/2+3);    
+  }  
+}
+
+static GTextAlignment AlignDate(bool is24){
+  if (is24){
+    return GTextAlignmentLeft;
+  }
+  else {
+    return GTextAlignmentRight;
+  }
+}
+
 // Callback for js request
 void request_watchjs(){
   //Starting loop at 0
@@ -151,6 +186,8 @@ static void layer_update_proc(Layer *layer, GContext *ctx) {
                      GTextOverflowModeFill, GTextAlignmentCenter, NULL
                     );
 
+  graphics_context_set_stroke_color(ctx, GColorRed);
+  graphics_context_set_stroke_width(ctx, 1);
 
   // Create hour display
   GRect hourect =grect_centered_from_polar(GRect(bounds.size.h/2,bounds.size.w/2,0,0),
@@ -159,28 +196,51 @@ static void layer_update_proc(Layer *layer, GContext *ctx) {
                                            GSize(50,42)
                                           );
   char hournow[4];
-  snprintf(hournow, sizeof(hournow), "%02d", s_hours);
+  int hourtorect=hourtodraw(clock_is_24h_style(), s_hours);
+  snprintf(hournow, sizeof(hournow), "%02d", hourtorect);
   graphics_draw_text(ctx, hournow,
                      FontHour,hourect,
                      GTextOverflowModeFill, GTextAlignmentCenter, NULL
                     );
 
-  // Create date display
-  if (settings.DisplayDate){
-    GRect daterect=GRect(hourect.origin.x+hourect.size.w+1,
+  //Put AM or PM format
+  if (!clock_is_24h_style()){
+    char ampm[2];
+    if (s_hours<12){
+     strcpy(ampm, "am");
+    }
+    else {
+      strcpy(ampm, "pm");
+    }
+    //Create Rect and display
+     GRect ampmrect=GRect(hourect.origin.x+hourect.size.w+1,
                    hourect.origin.y+8,
                    inner.size.w/2-hourect.size.w/2-minrect.size.w/2+2,
                    hourect.size.h
                         );
+    graphics_draw_text(ctx, ampm, 
+                       FontDate,ampmrect,
+                       GTextOverflowModeWordWrap, GTextAlignmentLeft, NULL
+                      );
+  }
+  
+  // Create date display
+  if (settings.DisplayDate){
     char datenow[44];
     fetchwday(s_weekday, sys_locale, datenow);
     char convertday[4];
     snprintf(convertday, sizeof(convertday), " %02d", s_day);
     // Concatenate date
     strcat(datenow, convertday);
+    int newx=xdaterect(clock_is_24h_style(), hourect, inner, minrect);
+    GRect daterect=GRect(newx,
+                         hourect.origin.y+8,
+                         inner.size.w/2-hourect.size.w/2-minrect.size.w/2+2,
+                         hourect.size.h
+                        );
     graphics_draw_text(ctx, datenow, 
                        FontDate,daterect,
-                       GTextOverflowModeWordWrap, GTextAlignmentLeft, NULL
+                       GTextOverflowModeWordWrap, AlignDate(clock_is_24h_style()), NULL
                       );
   }
   
@@ -244,7 +304,7 @@ static void layer_update_proc(Layer *layer, GContext *ctx) {
                            FontCond,condrect,
                            GTextOverflowModeWordWrap, GTextAlignmentRight, NULL
                           );
-      }
+              }
       //If location was selected display
       if (settings.DisplayLoc){
         GRect locrect=GRect(hourect.origin.x-17+offsetloc/2, 
