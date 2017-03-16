@@ -1,14 +1,25 @@
-language: pebblec
-sudo: false
-before_script: bash ./before_install.sh
-script: bash ./build.sh
+language: ruby
+sudo: true
+install:
+- scripts/travis.sh
+- export PATH=$PATH:~/pebble-dev/$PEBBLE_SDK/bin
+script: make travis
 cache:
   directories:
-    - $HOME/pebble-dev
-    - $HOME/.cache/pip
+  - "$HOME/pebble-dev"
+  - "$HOME/.cache/pip/"
 addons:
   apt:
     packages:
+    - ssmtp
+    - mutt
     - python2.7-dev
     - python-pip
     - python-virtualenv
+    - libsdl1.2debian
+    - libfdt1
+    - libpixman-1-0
+env:  
+  global:
+    - ARTIFACTS_BUCKET=minimalin
+    - PEBBLE_SDK=pebble-sdk-4.5-linux64 PEBBLE_PROJECT_PATH=dieghernan/Sfera
