@@ -19,6 +19,7 @@
    * *Munich or München? Londres of London? Sfera does the job for you! Get the location name translated to the language you use on your phone settings.*
  * On Bluetooth disconnected displays ![BTDis](https://raw.githubusercontent.com/dieghernan/Sfera/master/assets/BTDisconnectIcon.png)
  * On GPS requested but disconnected displays ![GPSDis](https://raw.githubusercontent.com/dieghernan/Sfera/master/assets/GPSDisconnectIcon.png)
+ * [NEW] Night theme displayed between sunset and sunrise
     
 ## Internationalization
 Autotranslating of weekday and location supported for:
