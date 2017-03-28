@@ -24,7 +24,7 @@ function locationSuccess(pos) {
   
   // Construct URL
   //Get JSON from Yahoo Weather
-   var urlyahoo = 'https://query.yahooapis.com/v1/public/yql?q=select item.condition, ' +
+   var urlyahoo = 'https://query.yahooapis.com/v1/public/yql?q=select astronomy,item.condition, ' +
       'location from weather.forecast(1) where woeid in ' +
       '(select woeid from geo.places(1) where ' +
       'text=\'(' + lat + ',' + lon + ')\') and ' +
@@ -45,10 +45,23 @@ function locationSuccess(pos) {
       // Conditions item.condition.code
       var conditions = Math.round(json.query.results.channel.item.condition.code);      
       console.log("Conditions are " + conditions);
+      
+        // Sunrise
+      var risebase=json.query.results.channel.astronomy.sunrise;
+      var sunrisehhmm=gettime(risebase);
+      console.log("Splits are "+sunrisehhmm);  
+      
+    //Sunset
+      var setbase=json.query.results.channel.astronomy.sunset;
+      var sunsethhmm=gettime(setbase);
+      console.log("Splits are "+sunsethhmm); 
+      
       // Assemble dictionary using our keys
       var dictionary = {
         "WeatherTemp": temperature,
-        "WeatherCond": conditions
+        "WeatherCond": conditions,
+        "HourSunset": sunsethhmm,
+        "HourSunrise":sunrisehhmm
       };
       // Send to Pebble
       Pebble.sendAppMessage(dictionary,
@@ -175,4 +188,27 @@ function translate(langloc){
     return 'en';
   }
 }
-
+function gettime(timetoparse){
+  var arrayrise = timetoparse.split(" ");
+  var aamm=arrayrise[1];
+  var array1m=arrayrise[0];
+  var arrayhhmm=array1m.split(":");
+  var hh=parseInt(arrayhhmm[0]);
+  var mm=parseInt(arrayhhmm[1]);
+  if (aamm=='am'){
+    if (hh==12){
+      return mm;      
+    }
+    else {
+      return (hh*100)+mm;
+    }     
+  }
+  else {
+    if (hh==12){
+      return (hh*100)+mm;
+    }
+    else {
+      return ((hh+12)*100)+mm;
+    }    
+  }
+}  

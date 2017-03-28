@@ -9,9 +9,17 @@ typedef struct ClaySettings {
   GColor ForegroundColor;
   GColor DotsColor;
   GColor BatteryColor;
+  
+  GColor BackgroundColorNight;
+  GColor ForegroundColorNight;
+  GColor DotsColorNight;
+  GColor BatteryColorNight;
+  
   bool   WeatherUnit;
   int    WeatherCond;
   int    UpSlider;
+  int    HourSunrise;
+  int    HourSunset;
   char*  WeatherTemp;
   bool DisplayDate;
   bool DisplayTemp;
@@ -19,7 +27,9 @@ typedef struct ClaySettings {
   bool DisplayDots;
   bool DisplayBattery;
   bool BTOn;
-  bool GPSOn; 
+  bool GPSOn;
+  bool NightTheme;
+  bool IsNightNow;
   
     
 } __attribute__((__packed__)) ClaySettings;

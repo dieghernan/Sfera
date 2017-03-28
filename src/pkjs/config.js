@@ -12,64 +12,102 @@ module.exports = [
     "items": [
       {
         "type": "heading",
-        "defaultValue": "General settings"
-      },
-      {
-        "type": "color",
-        "messageKey": "BackgroundColor",
-        "defaultValue": "0xFFFFFF",
-        "label": "Background"
-      },
-      {
-        "type": "color",
-        "messageKey": "ForegroundColor",
-        "defaultValue": "0x000055",
-        "label": "Text"
+        "defaultValue": "Theme settings"
       },
       {
         "type": "toggle",
         "messageKey": "DisplayDate",
         "label": "Date",
         "defaultValue": false      
-      }
-    ]
-  },
-   {
-    "type": "section",
-    "items": [ 
-      {
-        "type": "heading",
-        "defaultValue": "Graphics settings"
       },
-       {
+      {
         "type": "toggle",
         "messageKey": "DisplayDots",
         "label": "Display Dots",
         "defaultValue": false      
       },
       {
-        "type": "color",
-        "messageKey": "DotsColor",
-        "defaultValue": "0x0055FF",
-        "label": "Dots Color"
-      },  
-       {
         "type": "toggle",
         "messageKey": "DisplayBattery",
         "label": "Display Battery Level",
         "defaultValue": false,
         "description": "Displayed as a clockwise arc near the bezel"
       },
+        {
+          "type": "section",
+          "items": [
+            {
+              "type": "heading",
+              "defaultValue": "General Theme",
+              "size":4
+              }  ,
+              {
+                "type": "color",
+                "messageKey": "BackgroundColor",
+                "defaultValue": "0xFFFFFF",
+                "label": "Background"
+              },
+              {
+                "type": "color",
+                "messageKey": "ForegroundColor",
+                "defaultValue": "0x000055",
+                "label": "Text"
+              },
+        
+              {
+                "type": "color",
+                "messageKey": "DotsColor",
+                "defaultValue": "0x0055FF",
+                "label": "Dots Color"
+              },   
+              {
+                "type": "color",
+                "messageKey": "BatteryColor",
+                "defaultValue": "0x55AAFF",
+                "label": "Battery Bar Color",
+                "description": "On battery below 20% the color switchs to red"
+              } 
+          ]
+        },
+      {
+        "type": "heading",
+        "defaultValue": "Night Theme",
+        "size":4
+      }  ,
+      {
+        "type": "toggle",
+        "messageKey": "NightTheme",
+        "label": "Activate Night Theme",
+        "defaultValue": false,
+        "description": "When activate requires GPS. Theme applied between sunset and sunrise."
+      },
       {
         "type": "color",
-        "messageKey": "BatteryColor",
-        "defaultValue": "0x55AAFF",
-        "label": "Battery Bar Color",
-        "description": "On battery below 20% the color switchs to red"
-      }    
-    ]
- },
+        "messageKey": "BackgroundColorNight",
+        "defaultValue": "0x000055",
+        "label": "Background"
+      },
+      {
+        "type": "color",
+        "messageKey": "ForegroundColorNight",
+        "defaultValue": "0xFF5500",
+        "label": "Text"
+      },
 
+      {
+        "type": "color",
+        "messageKey": "DotsColorNight",
+        "defaultValue": "0xFF5500",
+        "label": "Dots Color"
+      },   
+      {
+        "type": "color",
+        "messageKey": "BatteryColorNight",
+        "defaultValue": "0xFF5500",
+        "label": "Battery Bar Color"
+      }         
+    ]
+  },  
   {
     "type": "section",
     "items": [ 
@@ -96,7 +134,7 @@ module.exports = [
         "messageKey": "DisplayLoc",
         "label": "Location",
         "defaultValue": false,
-        "description": "When available, neighborhood is displayed instead of city"
+        "description": "When available, neighbourhood is displayed instead of city"
       },
       {
         "type": "slider",

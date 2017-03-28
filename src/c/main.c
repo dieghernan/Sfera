@@ -48,6 +48,18 @@ static int xdaterect(bool is24, GRect hourect, GRect inner, GRect minrect){
   }  
 }
 
+
+static GColor ColorSelect(bool isactive, bool gpsstate, bool isnight, GColor ColorDay, GColor ColorNight){
+  if (isactive && isnight && gpsstate){
+    return ColorNight;   
+  }
+  else {
+    return ColorDay;
+  }  
+}
+
+
+
 static GTextAlignment AlignDate(bool is24){
   if (is24){
     return GTextAlignmentLeft;
@@ -79,9 +91,17 @@ static void prv_default_settings() {
   settings.ForegroundColor  = GColorOxfordBlue;
   settings.DotsColor        = GColorBlueMoon;
   settings.BatteryColor      =GColorPictonBlue;
+  
+  settings.BackgroundColorNight   = GColorPictonBlue;
+  settings.ForegroundColorNight  = GColorOrange;
+  settings.DotsColorNight        = GColorOrange;
+  settings.BatteryColorNight      =GColorOrange;
+  
   settings.WeatherUnit       = false;
   settings.WeatherCond       =0;
   settings.UpSlider          =30;
+  settings.HourSunrise    =600;
+  settings.HourSunset    =1700;
   settings.DisplayLoc        =false;
   settings.DisplayDate    =false;
   settings.DisplayLoc    =false;
@@ -89,6 +109,9 @@ static void prv_default_settings() {
   settings.DisplayBattery =false;
   settings.BTOn=true;
   settings.GPSOn=false;
+  settings.NightTheme=true;
+  settings.IsNightNow=false;
+  
  }
 //////End Configuration///
 ///////////////////////////
@@ -108,7 +131,7 @@ static void onreconnection(bool before, bool now){
 //Update main layer
 static void layer_update_proc(Layer *layer, GContext *ctx) {
   // Colors
-  graphics_context_set_text_color(ctx, settings.ForegroundColor); 
+  graphics_context_set_text_color(ctx, ColorSelect(settings.NightTheme, settings.GPSOn, settings.IsNightNow, settings.ForegroundColor, settings.ForegroundColorNight)); 
   // Local language
   const char* sys_locale = i18n_get_system_locale();
  
@@ -123,7 +146,7 @@ static void layer_update_proc(Layer *layer, GContext *ctx) {
     s_battery_level=battery_state_service_peek() .charge_percent;
     
     graphics_context_set_stroke_width(ctx, 4);
-    graphics_context_set_stroke_color(ctx, settings.BatteryColor);
+    graphics_context_set_stroke_color(ctx, ColorSelect(settings.NightTheme, settings.GPSOn, settings.IsNightNow, settings.BatteryColor, settings.BatteryColorNight)); 
     //Battery below 20 is set red
     if (s_battery_level<=20){
       graphics_context_set_stroke_color(ctx, GColorRed);
@@ -137,7 +160,7 @@ static void layer_update_proc(Layer *layer, GContext *ctx) {
   int minute_angle=get_angle_for_minutes(s_minutes);
   // Create dots only if active
   if (settings.DisplayDots){
-      graphics_context_set_fill_color(ctx, settings.DotsColor);
+      graphics_context_set_fill_color(ctx, ColorSelect(settings.NightTheme, settings.GPSOn, settings.IsNightNow, settings.DotsColor, settings.DotsColorNight)); 
       for(int i = 0; i < 12; i++) {
        int dot_angle = get_angle_dot(i);
        GPoint pos = gpoint_from_polar(frame, 
@@ -355,11 +378,22 @@ static void prv_inbox_received_handler(DictionaryIterator *iter, void *context) 
     settings.BackgroundColor = GColorFromHEX(bg_color_t->value->int32);
 	}
 
+  Tuple *nbg_color_t = dict_find(iter, MESSAGE_KEY_BackgroundColorNight);
+  if (nbg_color_t) {
+    settings.BackgroundColorNight = GColorFromHEX(nbg_color_t->value->int32);
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Cached BKCOLNIGHT");
+	}
+  
   // Foreground Color
  	Tuple *fg_color_t = dict_find(iter, MESSAGE_KEY_ForegroundColor);
   if (fg_color_t) {
     settings.ForegroundColor = GColorFromHEX(fg_color_t->value->int32);
   }  
+  Tuple *nfg_color_t = dict_find(iter, MESSAGE_KEY_ForegroundColorNight);
+  if (nfg_color_t) {
+     settings.ForegroundColorNight = GColorFromHEX(nfg_color_t->value->int32);
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Cached FORCOLNIGHT");
+	}
   
   // Dots Color
  	Tuple *dt_color_t = dict_find(iter, MESSAGE_KEY_DotsColor);
@@ -367,11 +401,23 @@ static void prv_inbox_received_handler(DictionaryIterator *iter, void *context) 
     settings.DotsColor = GColorFromHEX(dt_color_t->value->int32);
   }  
   
+  Tuple *ndt_color_t = dict_find(iter, MESSAGE_KEY_DotsColorNight);
+  if (ndt_color_t) {
+    settings.DotsColorNight = GColorFromHEX(ndt_color_t->value->int32);
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Cached dotCOLNIGHT");
+	}
+  
+  
   //Battery Color
    	Tuple *batt_color_t = dict_find(iter, MESSAGE_KEY_BatteryColor);
   if (batt_color_t) {
     settings.BatteryColor = GColorFromHEX(batt_color_t->value->int32);
   }  
+    Tuple *nbatt_color_t = dict_find(iter, MESSAGE_KEY_BatteryColorNight);
+  if (nbatt_color_t) {
+    settings.BatteryColorNight = GColorFromHEX(ndt_color_t->value->int32);
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Cached batCOLNIGHT");
+	}
   
   
   //Control of data from http
@@ -390,6 +436,18 @@ static void prv_inbox_received_handler(DictionaryIterator *iter, void *context) 
  if (wtemp_t){ 
     snprintf(tempstring, sizeof(tempstring), "%s", wtemp_t->value->cstring);
       APP_LOG(APP_LOG_LEVEL_DEBUG,"Now temp is %s",tempstring);
+  }
+  
+    //Hour Sunrise and Sunset
+  Tuple *sunrise_t=dict_find(iter, MESSAGE_KEY_HourSunrise);
+  if (sunrise_t){
+    APP_LOG(APP_LOG_LEVEL_DEBUG,"Now SUNRISE is %d",(int)sunrise_t->value->int32);
+    settings.HourSunrise=(int)sunrise_t->value->int32;
+  }
+  Tuple *sunset_t=dict_find(iter, MESSAGE_KEY_HourSunset);
+  if (sunset_t){
+    APP_LOG(APP_LOG_LEVEL_DEBUG,"Now sunset is %d",(int)sunset_t->value->int32);  
+    settings.HourSunset=(int)sunset_t->value->int32;
   }
   
   // Location
@@ -467,9 +525,18 @@ static void prv_inbox_received_handler(DictionaryIterator *iter, void *context) 
     else settings.DisplayBattery=true;
   }
   
+  Tuple *disntheme_t=dict_find(iter,MESSAGE_KEY_NightTheme);
+  if (disntheme_t){
+    if (disntheme_t->value->int32==0){
+      settings.NightTheme=false;
+      APP_LOG(APP_LOG_LEVEL_DEBUG,"NTHeme off");
+    }
+    else settings.NightTheme=true;
+  }
+  
   //Update colors
 	layer_mark_dirty(s_canvas);
-  window_set_background_color(s_window, settings.BackgroundColor);
+  window_set_background_color(s_window,ColorSelect(settings.NightTheme, settings.IsNightNow, settings.GPSOn,settings.BackgroundColor, settings.BackgroundColorNight));
        
   // Save the new settings to persistent storage
   prv_save_settings();
@@ -499,7 +566,7 @@ static void window_unload(Window *window) {
 
 void main_window_push() {
   s_window = window_create();
-  window_set_background_color(s_window, settings.BackgroundColor);
+  window_set_background_color(s_window, ColorSelect(settings.NightTheme, settings.GPSOn, settings.IsNightNow, settings.BackgroundColor, settings.BackgroundColorNight)); 
   window_set_window_handlers(s_window, (WindowHandlers) {
     .load = window_load,
     .unload = window_unload,
@@ -518,7 +585,9 @@ void main_window_update(int hours, int minutes, int weekday, int day) {
 static void tick_handler(struct tm *time_now, TimeUnits changed) {
   main_window_update(time_now->tm_hour, time_now->tm_min, time_now->tm_wday, time_now->tm_mday);
   APP_LOG(APP_LOG_LEVEL_DEBUG, "Tick at %d", time_now->tm_min);
- if (s_countdown==0){
+    s_loop=0;
+  
+if (s_countdown==0){
    //Reset
    s_countdown=settings.UpSlider;
  }
@@ -526,6 +595,25 @@ else {
   s_countdown=s_countdown-1;  
 }
   APP_LOG(APP_LOG_LEVEL_DEBUG, "Countdown to update %d", s_countdown);
+  
+    // Evaluate if is day or night
+  if (settings.GPSOn && settings.NightTheme){  
+    int nowthehouris=s_hours*100+s_minutes;
+    if (settings.HourSunrise<=nowthehouris && nowthehouris<=settings.HourSunset){
+      settings.IsNightNow=false;  
+    }
+    else {
+       settings.IsNightNow=true;        
+    }
+    
+    //Extra catch around 1159 to gather information of today
+     if (nowthehouris==1159 && s_countdown>5) {s_countdown=1;};
+    // Change Color of background	
+    layer_mark_dirty(s_canvas);
+    window_set_background_color(s_window,ColorSelect(settings.NightTheme, settings.IsNightNow, settings.GPSOn,settings.BackgroundColor, settings.BackgroundColorNight));
+    }
+  
+  
    // Get weather update every 30 minutes and extra request 5 minutes earlier
   if(s_countdown== 0 || s_countdown==5) {
     if (settings.DisplayTemp || settings.DisplayLoc){
