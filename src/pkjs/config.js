@@ -33,42 +33,34 @@ module.exports = [
         "defaultValue": false,
         "description": "Displayed as a clockwise arc near the bezel"
       },
-        {
-          "type": "section",
-          "items": [
-            {
-              "type": "heading",
-              "defaultValue": "General Theme",
-              "size":4
-              }  ,
-              {
-                "type": "color",
-                "messageKey": "BackgroundColor",
-                "defaultValue": "0xFFFFFF",
-                "label": "Background"
-              },
-              {
-                "type": "color",
-                "messageKey": "ForegroundColor",
-                "defaultValue": "0x000055",
-                "label": "Text"
-              },
-        
-              {
-                "type": "color",
-                "messageKey": "DotsColor",
-                "defaultValue": "0x0055FF",
-                "label": "Dots Color"
-              },   
-              {
-                "type": "color",
-                "messageKey": "BatteryColor",
-                "defaultValue": "0x55AAFF",
-                "label": "Battery Bar Color",
-                "description": "On battery below 20% the color switchs to red"
-              } 
-          ]
-        },
+      {
+        "type": "color",
+        "messageKey": "BackgroundColor",
+        "defaultValue": "0xFFFFFF",
+        "label": "Background"
+      },
+      {
+        "type": "color",
+        "messageKey": "ForegroundColor",
+        "defaultValue": "0x000055",
+        "label": "Text"
+      },
+
+      {
+        "type": "color",
+        "messageKey": "DotsColor",
+        "defaultValue": "0x0055FF",
+        "label": "Dots Color"
+      },   
+      {
+        "type": "color",
+        "messageKey": "BatteryColor",
+        "defaultValue": "0x55AAFF",
+        "label": "Battery Bar Color",
+        "description": "On battery below 20% the color switchs to red"
+      },
+      {"type": "section",
+      "items": [
       {
         "type": "heading",
         "defaultValue": "Night Theme",
@@ -105,7 +97,9 @@ module.exports = [
         "messageKey": "BatteryColorNight",
         "defaultValue": "0xFF5500",
         "label": "Battery Bar Color"
-      }         
+      }
+      ]
+      }
     ]
   },  
   {
@@ -115,14 +109,19 @@ module.exports = [
         "type": "heading",
         "defaultValue": "Connection settings"
       },
-      
+      {
+        "type": "toggle",
+        "messageKey": "DisplayLoc",
+        "label": "Location",
+        "defaultValue": false
+      },
       {
         "type": "toggle",
         "messageKey": "DisplayTemp",
         "label": "Weather",
         "defaultValue": false      
       },
-        {
+      {
         "type": "toggle",
         "messageKey": "WeatherUnit",
         "label": "Temperature in Fahrenheit",
@@ -130,30 +129,57 @@ module.exports = [
         "description": "Applicable if Weather toggle is active"
       },
       {
-        "type": "toggle",
-        "messageKey": "DisplayLoc",
-        "label": "Location",
-        "defaultValue": false,
-        "description": "When available, neighbourhood is displayed instead of city"
+        "type": "select",
+        "messageKey": "WeatherProv",
+        "defaultValue": "yahoo",
+        "label": "Weather Provider",
+        "description": "WU and OWM requires authentification. See next section",
+        "options": [
+          { 
+            "label": "Yahoo", 
+            "value": "yahoo" 
+          },
+          { 
+            "label": "OpenWeatherMap",
+            "value": "owm"
+          },
+          {
+            "label": "WeatherUnderground",
+            "value": "wu"
+          }
+        ]        
       },
+      {
+        "type": "input",
+        "messageKey": "EmailPMKEY",
+        "defaultValue": "",
+        "label": "pmkey.xyz User",
+        "description": "pmkey.xyz is a free service for Pebble users that allows you to store safely all your API keys in a single place. Check <a href=https://www.pmkey.xyz/>pmkey.xyz</a> ",
+        "attributes": {
+          "placeholder": "eg: john.doe@pmkey.xyz",
+          "type": "email"
+        }
+      },
+      {
+        "type": "input",
+        "messageKey": "PINPMKEY",
+        "defaultValue": "",
+        "label": "pmkey.xyz PIN",
+        "attributes": {
+          "placeholder": "eg: 12345"
+        }
+      },      
       {
         "type": "slider",
         "messageKey": "UpSlider",
         "defaultValue": 30,
         "label": "Update frequency (minutes)",
-        "description": "Weather and Location will update as frequently as you want. Note that more frequent requests will drain your phone battery faster  ",
+        "description": "More frequent requests will drain your phone battery faster",
         "min": 15,
         "max": 120,
         "step": 15},
     ]
  },
- //Yahoo disclaimer
-  {
-      "type": "heading",
-      "defaultValue": "Weather and Location info provided by <a href=https://www.yahoo.com/?ilc=401>Yahoo.com </a>",
-      "size":6
-  },
-      
  {
     "type": "submit",
     "defaultValue":"Ok"

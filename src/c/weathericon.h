@@ -1,3 +1,3 @@
 #pragma once
 
-void get_conditions_yahoo(int yahoocond, char *conditionnow );
+void get_conditions(int yahoocond, char *conditionnow,bool alreadynight );

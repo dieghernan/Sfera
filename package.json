@@ -23,7 +23,6 @@
             "DisplayDate",
             "DisplayTemp",
             "DisplayLoc",
-            "NameCity",
             "DisplayDots",
             "DisplayBattery",
             "BatteryColor",
@@ -34,11 +33,20 @@
             "DotsColorNight",
             "BatteryColorNight",
             "HourSunset",
-            "HourSunrise"
+            "HourSunrise",
+            "WeatherProv",
+            "EmailPMKEY",
+            "PINPMKEY"
         ],
         "projectType": "native",
         "resources": {
             "media": [
+                {
+                    "file": "fonts/weatherfontcustom2.ttf",
+                    "name": "FONT_WICON_22",
+                    "targetPlatforms": null,
+                    "type": "font"
+                },
                 {
                     "file": "images/sfera.png",
                     "menuIcon": true,
@@ -47,14 +55,9 @@
                     "type": "bitmap"
                 },
                 {
-                    "file": "fonts/weatherfontcustom.ttf",
-                    "name": "FONT_WICON_22",
-                    "targetPlatforms": null,
-                    "type": "font"
-                },
-                {
+                    "characterRegex": "[0-9 a-z A-Z]",
                     "file": "fonts/Gotham Light.otf",
-                    "name": "FONT_GLIGHT_10",
+                    "name": "FONT_GLIGHT_12",
                     "targetPlatforms": null,
                     "type": "font"
                 },
@@ -65,16 +68,8 @@
                     "type": "font"
                 },
                 {
-                    "characterRegex": "[0-9 a-z A-Z]",
                     "file": "fonts/Gotham Light.otf",
-                    "name": "FONT_GLIGHT_12",
-                    "targetPlatforms": null,
-                    "type": "font"
-                },
-                {
-                    "characterRegex": "[0-9]",
-                    "file": "fonts/Gotham Bold.otf",
-                    "name": "FONT_GBOLD_22",
+                    "name": "FONT_GLIGHT_10",
                     "targetPlatforms": null,
                     "type": "font"
                 },
@@ -82,6 +77,13 @@
                     "characterRegex": "[0-9]",
                     "file": "fonts/Gotham Bold.otf",
                     "name": "FONT_GBOLD_34",
+                    "targetPlatforms": null,
+                    "type": "font"
+                },
+                {
+                    "characterRegex": "[0-9]",
+                    "file": "fonts/Gotham Bold.otf",
+                    "name": "FONT_GBOLD_22",
                     "targetPlatforms": null,
                     "type": "font"
                 },
@@ -103,5 +105,5 @@
             "watchface": true
         }
     },
-    "version": "2.0.0"
+    "version": "3.0.0"
 }

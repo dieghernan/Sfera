@@ -123,8 +123,7 @@ static void bluetooth_callback(bool connected) {
 static void onreconnection(bool before, bool now){
   if (!before && now){
     APP_LOG(APP_LOG_LEVEL_DEBUG, "BT reconnected, requesting weather at %d", s_minutes);
-  
-     request_watchjs();  
+    request_watchjs();  
   }  
 }
 
@@ -363,9 +362,7 @@ static void prv_save_settings() {
 // Handle the response from AppMessage
 static void prv_inbox_received_handler(DictionaryIterator *iter, void *context) {
  s_loop=s_loop+1;
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "Loop is %d", s_loop);
   if (s_loop==1){
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "Cleaning vars in loop %d", s_loop);
       //Clean vars  
         strcpy(tempstring, "");
         strcpy(condstring, "");
@@ -381,7 +378,6 @@ static void prv_inbox_received_handler(DictionaryIterator *iter, void *context) 
   Tuple *nbg_color_t = dict_find(iter, MESSAGE_KEY_BackgroundColorNight);
   if (nbg_color_t) {
     settings.BackgroundColorNight = GColorFromHEX(nbg_color_t->value->int32);
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "Cached BKCOLNIGHT");
 	}
   
   // Foreground Color
@@ -392,7 +388,6 @@ static void prv_inbox_received_handler(DictionaryIterator *iter, void *context) 
   Tuple *nfg_color_t = dict_find(iter, MESSAGE_KEY_ForegroundColorNight);
   if (nfg_color_t) {
      settings.ForegroundColorNight = GColorFromHEX(nfg_color_t->value->int32);
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "Cached FORCOLNIGHT");
 	}
   
   // Dots Color
@@ -404,7 +399,6 @@ static void prv_inbox_received_handler(DictionaryIterator *iter, void *context) 
   Tuple *ndt_color_t = dict_find(iter, MESSAGE_KEY_DotsColorNight);
   if (ndt_color_t) {
     settings.DotsColorNight = GColorFromHEX(ndt_color_t->value->int32);
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "Cached dotCOLNIGHT");
 	}
   
   
@@ -416,65 +410,45 @@ static void prv_inbox_received_handler(DictionaryIterator *iter, void *context) 
     Tuple *nbatt_color_t = dict_find(iter, MESSAGE_KEY_BatteryColorNight);
   if (nbatt_color_t) {
     settings.BatteryColorNight = GColorFromHEX(ndt_color_t->value->int32);
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "Cached batCOLNIGHT");
 	}
   
   
   //Control of data from http
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "At beggining loop %d temp is %s Cond is %s and City is %s",s_loop, tempstring,condstring,citistring);
-    // Weather Cond
-  Tuple *wcond_t=dict_find(iter, MESSAGE_KEY_WeatherCond );
-
-  if (wcond_t){ 
-    get_conditions_yahoo((int)wcond_t->value->int32, condstring);
-    APP_LOG(APP_LOG_LEVEL_DEBUG,"Now cond is %s",condstring);
-    APP_LOG(APP_LOG_LEVEL_DEBUG,"Updated Cond at loop %d",s_loop);
+  // Weather Cond
+  Tuple *wcond_t=dict_find(iter, MESSAGE_KEY_WeatherCond);
+    if (wcond_t){ 
+    get_conditions((int)wcond_t->value->int32, condstring,settings.IsNightNow);
   }
-  
-   // Weather Temp
+  // Weather Temp
   Tuple *wtemp_t=dict_find(iter, MESSAGE_KEY_WeatherTemp);
  if (wtemp_t){ 
     snprintf(tempstring, sizeof(tempstring), "%s", wtemp_t->value->cstring);
-      APP_LOG(APP_LOG_LEVEL_DEBUG,"Now temp is %s",tempstring);
   }
-  
-    //Hour Sunrise and Sunset
+   //Hour Sunrise and Sunset
   Tuple *sunrise_t=dict_find(iter, MESSAGE_KEY_HourSunrise);
   if (sunrise_t){
-    APP_LOG(APP_LOG_LEVEL_DEBUG,"Now SUNRISE is %d",(int)sunrise_t->value->int32);
     settings.HourSunrise=(int)sunrise_t->value->int32;
   }
   Tuple *sunset_t=dict_find(iter, MESSAGE_KEY_HourSunset);
   if (sunset_t){
-    APP_LOG(APP_LOG_LEVEL_DEBUG,"Now sunset is %d",(int)sunset_t->value->int32);  
     settings.HourSunset=(int)sunset_t->value->int32;
-  }
-  
+  }  
   // Location
-  Tuple *neigh_t=dict_find(iter, MESSAGE_KEY_NameLocation);
-  Tuple *citi_t=dict_find(iter,MESSAGE_KEY_NameCity);
-  
+  Tuple *neigh_t=dict_find(iter, MESSAGE_KEY_NameLocation);  
   if (neigh_t){
     snprintf(citistring,sizeof(citistring),"%s",neigh_t->value->cstring);
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "Citistring is neighborhood %s", citistring);
-     APP_LOG(APP_LOG_LEVEL_DEBUG,"Updated Neigh at loop %d",s_loop);
   }
   
-  else if (citi_t){
-    snprintf(citistring,sizeof(citistring),"%s",citi_t->value->cstring);
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "Citistring is city %s", citistring);
-    APP_LOG(APP_LOG_LEVEL_DEBUG,"Updated City at loop %d",s_loop);
-  }
-  
+ 
   //Control of data gathered for http
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "After loop %d temp is %s Cond is %s and City is %s", s_loop,tempstring,condstring,citistring);
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "After loop %d temp is %s Cond is %s and City is %s Sunrise is %d Sunset is %d", s_loop,tempstring,condstring,citistring,settings.HourSunrise,settings.HourSunset);
   
   if (strcmp(tempstring, "") !=0 && strcmp(condstring, "") !=0 && strcmp(citistring, "")){
     APP_LOG(APP_LOG_LEVEL_DEBUG,"GPS fully working at loop %d",s_loop);
     settings.GPSOn=true;
   }  
   else {
-    APP_LOG(APP_LOG_LEVEL_DEBUG,"MIssing info at loop %d, GPS false",s_loop);
+    APP_LOG(APP_LOG_LEVEL_DEBUG,"Missing info at loop %d, GPS false",s_loop);
     settings.GPSOn=false;
   }
   //End data gathered
@@ -483,6 +457,9 @@ static void prv_inbox_received_handler(DictionaryIterator *iter, void *context) 
   Tuple *frequpdate=dict_find(iter, MESSAGE_KEY_UpSlider);
   if (frequpdate){
     settings.UpSlider=(int)frequpdate->value->int32;
+    //Restart the counter
+    s_countdown=settings.UpSlider;
+
   }
   
   Tuple *disdate_t=dict_find(iter,MESSAGE_KEY_DisplayDate);
@@ -586,35 +563,41 @@ static void tick_handler(struct tm *time_now, TimeUnits changed) {
   main_window_update(time_now->tm_hour, time_now->tm_min, time_now->tm_wday, time_now->tm_mday);
   APP_LOG(APP_LOG_LEVEL_DEBUG, "Tick at %d", time_now->tm_min);
     s_loop=0;
-  
-if (s_countdown==0){
+  if (s_countdown==0){
    //Reset
    s_countdown=settings.UpSlider;
  }
-else {
-  s_countdown=s_countdown-1;  
-}
+  else {
+    s_countdown=s_countdown-1;  
+  }
+  
   APP_LOG(APP_LOG_LEVEL_DEBUG, "Countdown to update %d", s_countdown);
   
     // Evaluate if is day or night
-  if (settings.GPSOn && settings.NightTheme){  
-    int nowthehouris=s_hours*100+s_minutes;
-    if (settings.HourSunrise<=nowthehouris && nowthehouris<=settings.HourSunset){
-      settings.IsNightNow=false;  
+  int nowthehouris=s_hours*100+s_minutes;
+  if (settings.HourSunrise<=nowthehouris && nowthehouris<=settings.HourSunset){
+    settings.IsNightNow=false;  
     }
-    else {
-       settings.IsNightNow=true;        
-    }
-    
+  else {
+    settings.IsNightNow=true;
+  }
+  // Extra catch on sunrise and sunset
+  if (nowthehouris==settings.HourSunrise || nowthehouris==settings.HourSunset){
+      s_countdown=1;
+  }
+  
+  
+  
+  if (settings.GPSOn && settings.NightTheme){
     //Extra catch around 1159 to gather information of today
      if (nowthehouris==1159 && s_countdown>5) {s_countdown=1;};
     // Change Color of background	
     layer_mark_dirty(s_canvas);
     window_set_background_color(s_window,ColorSelect(settings.NightTheme, settings.IsNightNow, settings.GPSOn,settings.BackgroundColor, settings.BackgroundColorNight));
-    }
+  }
   
   
-   // Get weather update every 30 minutes and extra request 5 minutes earlier
+   // Get weather update every requested minutes and extra request 5 minutes earlier
   if(s_countdown== 0 || s_countdown==5) {
     if (settings.DisplayTemp || settings.DisplayLoc){
       APP_LOG(APP_LOG_LEVEL_DEBUG, "Update weather at %d", time_now->tm_min);
@@ -648,7 +631,7 @@ static void init() {
   strcpy(citistring, "");
   //Register and open
   app_message_register_inbox_received(prv_inbox_received_handler);
-  app_message_open(256, 256);
+  app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
   
   // Load Fonts
   FontHour  =fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_GBOLD_34));

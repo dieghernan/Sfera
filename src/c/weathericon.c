@@ -2,59 +2,70 @@
 #include "weathericon.h"
 #include "string.h"
 
-static const char* const yahoomap[]={ 
-"a", //tornado
-"b", //tropical storm
-"c", //hurricane
-"d", //severe thunderstorms
-"d", //thunderstorms
-"e", //mixed rain and snow
-"e", //mixed rain and sleet
-"e", //mixed snow and sleet
-"f", //freezing drizzle
-"g", //drizzle
-"f", //freezing rain
-"g", //showers
-"g", //showers
-"h", //snow flurries
-"h", //light snow showers
-"h", //blowing snow
-"h", //snow
-"f", //hail
-"e", //sleet
-"i", //dust
-"j", //foggy
-"k", //haze
-"m", //smoky
-"l", //blustery
-"l", //windy
-"h", //cold
-"n", //cloudy
-"p", //mostly cloudy (night)
-"o", //mostly cloudy (day)
-"p", //partly cloudy (night)
-"o", //partly cloudy (day)
-"q", //clear (night)
-"r", //sunny
-"s", //fair (night)
-"t", //fair (day)
-"e", //mixed rain and hail
-"u", //hot
-"b", //isolated thunderstorms
-"b", //scattered thunderstorms
-"b", //scattered thunderstorms
-"g", //scattered showers
-"h", //heavy snow
-"h", //scattered snow showers
-"h", //heavy snow
-"t", //partly cloudy
-"b", //thundershowers
-"h", //snow showers
-"b", //isolated thundershowers
- "", //Null value 
+static const char* const iconmap[]={ 
+"a",  //tornado
+"b",  //day-storm-showers
+"c",  //hurricane
+"d",  //thunderstorm
+"e",  //rain-mix
+"f",  //hail
+"g",  //showers
+"h",  //snowflake-cold
+"i",  //dust
+"j",  //fog
+"k",  //windy
+"l",  //strong-wind
+"m",  //smoke
+"n",  //cloudy
+"o",  //day-cloudy
+"o",  //day-cloudy
+"r",  //sunny
+"r",  //sunny
+"t",  //sunny-overcast
+"t",  //sunny-overcast
+"u",  //hot
+"v",  //stars
+"b",  //day-storm-showers
+"x",  //day-rain-mix
+"x",  //day-rain-mix
+"z",  //thermometer
+"0",  //na
 };
 
-void get_conditions_yahoo(int yahoocond, char *conditionnow ){
-    strcpy(conditionnow, yahoomap[yahoocond]);
+static const char* const iconmapnight[]={ 
+"a",  //tornado
+"w",  //night-alt-storm-showers
+"c",  //hurricane
+"d",  //thunderstorm
+"e",  //rain-mix
+"f",  //hail
+"g",  //showers
+"h",  //snowflake-cold
+"i",  //dust
+"j",  //fog
+"k",  //windy
+"l",  //strong-wind
+"m",  //smoke
+"n",  //cloudy
+"p",  //night-alt-cloudy
+"p",  //night-alt-cloudy
+"q",  //night-clear
+"q",  //night-clear
+"s",  //night-alt-partly-cloudy
+"s",  //night-alt-partly-cloudy
+"u",  //hot
+"v",  //stars
+"w",  //night-alt-storm-showers
+"y",  //night-alt-rain-mix
+"y",  //night-alt-rain-mix
+"z",  //thermometer
+"0",  //na
+};
+
+void get_conditions(int condtosearch, char *conditionnow, bool alreadynight ){
+  if (alreadynight){
+    strcpy(conditionnow, iconmapnight[condtosearch]);
+  }
+  else strcpy(conditionnow, iconmap[condtosearch]);
 }
 
