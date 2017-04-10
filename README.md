@@ -20,7 +20,7 @@
     * [Wunderground](https://www.wunderground.com/?apiref=fb6856330e74c168)
     * [OpenWeatherMap](https://openweathermap.org/)
  * Implementation of [pmkey.xyz](https://www.pmkey.xyz)    
- * Location, based on your select weather provider
+ * Location, based on your selected weather provider
  * On Bluetooth disconnected displays ![BTDis](https://raw.githubusercontent.com/dieghernan/Sfera/master/assets/BTDisconnectIcon.png)
  * On GPS requested but disconnected displays ![GPSDis](https://raw.githubusercontent.com/dieghernan/Sfera/master/assets/GPSDisconnectIcon.png)
  * [NEW] Night theme displayed between sunset and sunrise
