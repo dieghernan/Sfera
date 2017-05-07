@@ -1,27 +1,24 @@
 #include <pebble.h>
 #include "weekday.h"
 #include "string.h"
-
 const char*  WEEKDAY_ES[] = {
-"Dom",
-"Lun",
-"Mar",
-"Mie",
-"Jue",
-"Vie",
-"Sab",
+  "Dom",
+  "Lun",
+  "Mar",
+  "Mie",
+  "Jue",
+  "Vie",
+  "Sab",
 };
-
 const char*  WEEKDAY_EN[] = {
-"Sun",
-"Mon",
-"Tue",
-"Wed",
-"Thu",
-"Fri",
-"Sat",
+  "Sun",
+  "Mon",
+  "Tue",
+  "Wed",
+  "Thu",
+  "Fri",
+  "Sat",
 };
-
 const char*  WEEKDAY_DE[] = {
 "Son",
 "Mon",

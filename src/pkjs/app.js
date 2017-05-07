@@ -12,300 +12,261 @@ var xhrRequest = function (url, type, callback) {
 };
 // Request for WU
 function locationSuccessWU(pos){
-  var keyAPI=localStorage.getItem('wuKey');
   //Request WU
   var lat=pos.coords.latitude;
   var lon= pos.coords.longitude;
   var settings = JSON.parse(localStorage.getItem('clay-settings')) || {};
   var units = unitsToString(settings.WeatherUnit);
+  var keyAPIwu = localStorage.getItem('wuKey');
+  var userKeyApi=settings.APIKEY_User;
+  var endapikey=apikeytouse(userKeyApi,keyAPIwu);  
   // Construct URL
   var urlWU = "http://api.wunderground.com/api/"+
-      keyAPI + "/conditions/astronomy/q/"+
+      endapikey + "/conditions/astronomy/q/"+
       lat+","+lon+
-        ".json";
-  
+      ".json";
   console.log("WUUrl= " + urlWU);
-  
-   xhrRequest(encodeURI(urlWU), 'GET', 
-    function(responseText) {
-      // responseText contains a JSON object with weather info
-      var json = JSON.parse(responseText);
-      // Temperature
-      var tempf = Math.round(json.current_observation.temp_f)+"°" + units;
-      var tempc = Math.round(json.current_observation.temp_c)+"°" + units;
-      var tempwu=temptousewu(units,tempf,tempc);
-      // Condition
-      var condwu=json.current_observation.icon;
-      var condwuparsed=parsewu(condwu);
-      // City
-      var citywu = json.current_observation.display_location.city;
-      // Sunrise and Sunset
-      var sunrisewu=parseInt(json.sun_phase.sunrise.hour*100)+parseInt(json.sun_phase.sunrise.minute*1);
-      var sunsetwu=parseInt(json.sun_phase.sunset.hour*100)+parseInt(json.sun_phase.sunset.minute*1);
-
-      // Assemble dictionary
-      var dictionary = {
-        "WeatherTemp": tempwu,
-        "WeatherCond": condwuparsed,
-        "HourSunset": sunsetwu,
-        "HourSunrise":sunrisewu,
-        "NameLocation": citywu
-      };
-
-     // Send to Pebble
-      Pebble.sendAppMessage(dictionary,
-        function(e) {
-          console.log("Weather from WU sent to Pebble successfully!");
-        },
-        function(e) {
-          console.log("Error sending WU info to Pebble!");
-        }
-      );
-    }      
-  );  
+  xhrRequest(encodeURI(urlWU), 'GET', function(responseText) {
+    // responseText contains a JSON object with weather info
+    var json = JSON.parse(responseText);
+    localStorage.setItem("OKAPI", 0);
+    // Temperature
+    var tempf = Math.round(json.current_observation.temp_f)+"°" + units;
+    var tempc = Math.round(json.current_observation.temp_c)+"°" + units;
+    var tempwu=temptousewu(units,tempf,tempc);
+    // Condition
+    var condwu=json.current_observation.icon;
+    var condwuparsed=parsewu(condwu);
+    // City
+    var citywu = json.current_observation.display_location.city;
+    // Sunrise and Sunset
+    var sunrisewu=parseInt(json.sun_phase.sunrise.hour*100)+parseInt(json.sun_phase.sunrise.minute*1);
+    var sunsetwu=parseInt(json.sun_phase.sunset.hour*100)+parseInt(json.sun_phase.sunset.minute*1);
+    localStorage.setItem("OKAPI", 1);
+    console.log("OK API");
+    // Assemble dictionary
+    var dictionary = {
+      "WeatherTemp": tempwu,
+      "WeatherCond": condwuparsed,
+      "HourSunset": sunsetwu,
+      "HourSunrise":sunrisewu,
+      "NameLocation": citywu
+    };
+    // Send to Pebble
+    Pebble.sendAppMessage(dictionary,function(e) {console.log("Weather from WU sent to Pebble successfully!");},
+                                     function(e) {console.log("Error sending WU info to Pebble!");}
+                                    );
+  });
 }
-
-
-
 // Request for OWM
 function locationSuccessOWM(pos){
-    //Request OWM
+  //Request OWM
   var lat=pos.coords.latitude;
   var lon= pos.coords.longitude;
   var settings = JSON.parse(localStorage.getItem('clay-settings')) || {};
-    var keyAPI=localStorage.getItem('owmKey');
+  var keyAPIowm=localStorage.getItem('owmKey');
+  var userKeyApi=settings.APIKEY_User;
+  var endapikey=apikeytouse(userKeyApi,keyAPIowm);  
   var units = unitsToString(settings.WeatherUnit);
   var unitsOWM=unitsToStringOWM(settings.WeatherUnit);
   var langtouse=translate(navigator.language);
   // Construct URL
   var urlOWM = "http://api.openweathermap.org/data/2.5/weather?lat=" +
       lat + "&lon=" + lon +
-      '&appid=' + keyAPI+
-     '&units='+unitsOWM+
+      '&appid=' + endapikey+
+      '&units='+unitsOWM+
       '&lang='+langtouse;
-  
   console.log("OWMUrl= " + urlOWM);
-
   // Send request to OpenWeatherMap
-  xhrRequest(encodeURI(urlOWM), 'GET', 
-    function(responseText) {
-      // responseText contains a JSON object with weather info
-      var json = JSON.parse(responseText);
-      // Temperature
-      var tempowm = Math.round(json.main.temp)+"°" + units;
-      // Conditions
-      var condowm = json.weather[0].id;
-      var condowmparsed=parseowm(condowm);  
+  xhrRequest(encodeURI(urlOWM), 'GET',function(responseText) {
+    // responseText contains a JSON object with weather info
+    var json = JSON.parse(responseText);
+    localStorage.setItem("OKAPI", 0);
+    // Temperature
+    var tempowm = Math.round(json.main.temp)+"°" + units;
+    // Conditions
+    var condowm = json.weather[0].id;
+    var condowmparsed=parseowm(condowm);
     // Sunrise and Sunset
-      var auxsunowm =new Date(json.sys.sunrise*1000); 
-      var sunriseowm=auxsunowm.getHours()*100+auxsunowm.getMinutes();
-      var auxsetowm =new Date(json.sys.sunset*1000); 
-      var sunsetowm=auxsetowm.getHours()*100+auxsetowm.getMinutes();
-    // Location 
-      var cityowm=json.name;
-      
-      // Assemble dictionary using our keys
-      var dictionary = {
-        "WeatherTemp": tempowm,
-        "WeatherCond": condowmparsed,
-        "HourSunset": sunsetowm,
-        "HourSunrise":sunriseowm,
-        "NameLocation": cityowm
-      };
-
-     // Send to Pebble
-      Pebble.sendAppMessage(dictionary,
-        function(e) {
-          console.log("Weather from OWM sent to Pebble successfully!");
-        },
-        function(e) {
-          console.log("Error sending OWM info to Pebble!");
-        }
-      );
-    }      
-  );  
+    var auxsunowm =new Date(json.sys.sunrise*1000);
+    var sunriseowm=auxsunowm.getHours()*100+auxsunowm.getMinutes();
+    var auxsetowm =new Date(json.sys.sunset*1000);
+    var sunsetowm=auxsetowm.getHours()*100+auxsetowm.getMinutes();
+    // Location
+    var cityowm=json.name;
+    localStorage.setItem("OKAPI", 1);
+    console.log("OK API");
+    // Assemble dictionary using our keys
+    var dictionary = {
+      "WeatherTemp": tempowm,
+      "WeatherCond": condowmparsed,
+      "HourSunset": sunsetowm,
+      "HourSunrise":sunriseowm,
+      "NameLocation": cityowm
+    };
+    // Send to Pebble
+    Pebble.sendAppMessage(dictionary,
+                          function(e) {console.log("Weather from OWM sent to Pebble successfully!");},
+                          function(e) { console.log("Error sending OWM info to Pebble!");}
+                         );
+  });
 }
-
 // Request for Yahoo
 function locationSuccessYahoo(pos) {
   var lat=pos.coords.latitude;
   var lon= pos.coords.longitude;
   var settings = JSON.parse(localStorage.getItem('clay-settings')) || {};
   var units = unitsToString(settings.WeatherUnit);
-
-  
   // Construct URL
   //Get JSON from Yahoo Weather
-   var urlyahoo = 'https://query.yahooapis.com/v1/public/yql?q=select astronomy,item.condition, ' +
+  var urlyahoo = 'https://query.yahooapis.com/v1/public/yql?q=select astronomy,item.condition, ' +
       'location from weather.forecast(1) where woeid in ' +
       '(select woeid from geo.places(1) where ' +
       'text=\'(' + lat + ',' + lon + ')\') and ' +
-      'u=\'' + units + '\'&format=json';   
-      console.log("WeatherUrl= " + urlyahoo);  
-
+      'u=\'' + units + '\'&format=json';
+  console.log("WeatherUrl= " + urlyahoo);
   // Send request to Yahoo for weather
-  xhrRequest(encodeURI(urlyahoo), 'GET', 
-    function(responseText) {
-      // responseText contains a JSON object with weather info
-      var json = JSON.parse(responseText);
-      var temperature = Math.round(json.query.results.channel.item.condition.temp) +"°" + units;
-      // Conditions item.condition.code
-      var conditions = Math.round(json.query.results.channel.item.condition.code);      
-      var condyahooparsed=parseyahoo(conditions);
-      
-        // Sunrise
-      var risebase=json.query.results.channel.astronomy.sunrise;
-      var sunrisehhmm=gettime(risebase);
-   
+  xhrRequest(encodeURI(urlyahoo), 'GET',function(responseText) {
+    var json = JSON.parse(responseText);
+    var temperature = Math.round(json.query.results.channel.item.condition.temp) +"°" + units;
+    // Conditions item.condition.code
+    var conditions = Math.round(json.query.results.channel.item.condition.code);
+    var condyahooparsed=parseyahoo(conditions);
+    // Sunrise
+    var risebase=json.query.results.channel.astronomy.sunrise;
+    var sunrisehhmm=gettime(risebase);
     //Sunset
-      var setbase=json.query.results.channel.astronomy.sunset;
-      var sunsethhmm=gettime(setbase);
-      
-      // Assemble dictionary using our keys
-      var dictionary = {
-        "WeatherTemp": temperature,
-        "WeatherCond": condyahooparsed,
-        "HourSunset": sunsethhmm,
-        "HourSunrise":sunrisehhmm
-      };
-      // Send to Pebble
-      Pebble.sendAppMessage(dictionary,
-        function(e) {
-          console.log("Weather info from Yahoo sent to Pebble successfully!");
-        },
-        function(e) {
-          console.log("Error sending weather info to Pebble!");
-        }
-      );
-    }      
-  );  
-  
+    var setbase=json.query.results.channel.astronomy.sunset;
+    var sunsethhmm=gettime(setbase);
+    // Assemble dictionary using our keys
+    var dictionary = {
+      "WeatherTemp": temperature,
+      "WeatherCond": condyahooparsed,
+      "HourSunset": sunsethhmm,
+      "HourSunrise":sunrisehhmm
+    };
+    // Send to Pebble
+    Pebble.sendAppMessage(dictionary,function(e) {
+      console.log("Weather info from Yahoo sent to Pebble successfully!");
+    },
+                          function(e) {
+                            console.log("Error sending weather info to Pebble!");});
+  }
+            );
   //Request location
   var langtouse=translate(navigator.language);
   var urlgeoplaces = 'https://query.yahooapis.com/v1/public/yql?q=' +
       'select locality1.content,locality2.content from geo.places(1) where ' +
       'text=\'(' + lat + ',' + lon + ')\' and ' +
-      'lang=\'' + langtouse +'\'&format=json'; 
-      console.log("GeoPlacesUrl= " + urlgeoplaces);
-  
+      'lang=\'' + langtouse +'\'&format=json';
+  console.log("GeoPlacesUrl= " + urlgeoplaces);
   //Send request to GeoPlaces
-   xhrRequest(encodeURI(urlgeoplaces), 'GET', 
-    function(responseText) {
-      // responseText contains a JSON object with weather info
-      var jsonloc = JSON.parse(responseText);
-      // Location
-      var location=jsonloc.query.results.place.locality2;
-      var city=jsonloc.query.results.place.locality1; 
-      var locfinYahoo=locationyahoo(location,city);
-
-      
-      // Assemble dictionary using our keys
-      var dictionary = {
-        "NameLocation": locfinYahoo
-      };
-      // Send to Pebble
-      Pebble.sendAppMessage(dictionary,
-        function(e) {
-          console.log("Location info sent to Pebble successfully!");
-        },
-        function(e) {
-          console.log("Error sending location info to Pebble!");
-        }
-      );
-    }      
-  );  
+  xhrRequest(encodeURI(urlgeoplaces), 'GET', function(responseText) {
+    // responseText contains a JSON object with weather info
+    var jsonloc = JSON.parse(responseText);
+    // Location
+    var location=jsonloc.query.results.place.locality2;
+    var city=jsonloc.query.results.place.locality1;
+    var locfinYahoo=locationyahoo(location,city);
+    // Assemble dictionary using our keys
+    var dictionary = {
+      "NameLocation": locfinYahoo
+    };
+    // Send to Pebble
+    Pebble.sendAppMessage(dictionary, function(e) {console.log("Location info sent to Pebble successfully!");},
+                          function(e) { console.log("Error sending location info to Pebble!");});
+  }
+            );
 }
 function locationError(err) {
   console.log("Error requesting geolocation!");
   //Send response null
   var location="";
   // Assemble dictionary using our keys
-      var dictionary = {
-        "NameLocation": location};
-       Pebble.sendAppMessage(dictionary,
-        function(e) {
-          console.log("Null key sent to Pebble successfully!");
-        },
-        function(e) {
-          console.log("Null key error sending to Pebble!");
-        }
-                            );
+  var dictionary = {
+    "NameLocation": location};
+  Pebble.sendAppMessage(dictionary,
+                        function(e) {
+                          console.log("Null key sent to Pebble successfully!");
+                        },
+                        function(e) {
+                          console.log("Null key error sending to Pebble!");
+                        }
+                       );
 }
-
-
-
 function getinfo() {
   // Get keys from pmkey
   var settings = JSON.parse(localStorage.getItem('clay-settings')) || {};
   var email=settings.EmailPMKEY;
   var pin=settings.PINPMKEY;
-   //Request API from pmkey.xyz
-  var urlpmk='https://pmkey.xyz/search/?email='+email+"&pin="+pin;
-  console.log("Url PMKEY is "+ urlpmk);
-    xhrRequest(encodeURI(urlpmk),'GET',
-             function(responseText){
-               var jsonpmk=JSON.parse(responseText);
-               var wuKey=jsonpmk.keys.weather.wu;
-               var owmKey=jsonpmk.keys.weather.owm;
-               
-               localStorage.setItem("wuKey", wuKey);
-               localStorage.setItem("owmKey", owmKey);
-             }            
-            ); 
-  
+  if (email !== undefined && pin !== undefined) {
+    //Request API from pmkey.xyz
+    var urlpmk='https://pmkey.xyz/search/?email='+email+"&pin="+pin;
+    console.log("Url PMKEY is "+ urlpmk);
+    var keys = parseInt(localStorage.getItem("OKAPI"));
+    console.log("Flag keys is " + keys);
+    if (keys===0){
+      xhrRequest(encodeURI(urlpmk),'GET',
+                 function(responseText){
+                   var jsonpmk=JSON.parse(responseText);
+                   var wuKey=jsonpmk.keys.weather.wu;
+                   var owmKey=jsonpmk.keys.weather.owm;
+                   localStorage.setItem("wuKey", wuKey);
+                   localStorage.setItem("owmKey", owmKey);
+                 }
+                );
+    }
+  }
   var weatherprov=settings.WeatherProv;
   if (weatherprov=="yahoo"){
     console.log("Requesting weather from Yahoo");
-      navigator.geolocation.getCurrentPosition(
-        locationSuccessYahoo,
-        locationError,
-        {enableHighAccuracy:true,timeout: 15000, maximumAge: 1000}
-      );
+    navigator.geolocation.getCurrentPosition(
+      locationSuccessYahoo,
+      locationError,
+      {enableHighAccuracy:true,timeout: 15000, maximumAge: 1000}
+    );
   }
   else if(weatherprov=="owm") {
     console.log("Ready from OWM");
     navigator.geolocation.getCurrentPosition(
-        locationSuccessOWM,
-        locationError,
-        {enableHighAccuracy:true,timeout: 15000, maximumAge: 1000}
-      );
+      locationSuccessOWM,
+      locationError,
+      {enableHighAccuracy:true,timeout: 15000, maximumAge: 1000}
+    );
   }
   else if (weatherprov=="wu"){
     console.log("Ready from WU");
-     navigator.geolocation.getCurrentPosition(
-        locationSuccessWU,
-        locationError,
-        {enableHighAccuracy:true,timeout: 15000, maximumAge: 1000}
-      );
-   }
+    navigator.geolocation.getCurrentPosition(
+      locationSuccessWU,
+      locationError,
+      {enableHighAccuracy:true,timeout: 15000, maximumAge: 1000}
+    );
+  }
 }
 // Listen for when the watchface is opened
-Pebble.addEventListener('ready', 
-  function(e) {
-    console.log("Starting Watchface!");
-    // Get the initial weather
-    getinfo();
-    }
-);
-
+Pebble.addEventListener('ready',
+                        function(e) {
+                          console.log("Starting Watchface!");
+                          localStorage.setItem("OKAPI", 0);
+                          // Get the initial weather
+                          getinfo();
+                        }
+                       );
 // Listen for when an AppMessage is received
 Pebble.addEventListener('appmessage',
-  function(e) {
-    console.log("Requesting geoposition!");
-    getinfo();
-   }                     
-);
-
+                        function(e) {
+                          console.log("Requesting geoposition!");
+                          getinfo();
+                        }
+                       );
 // Listen for when the Config app changes
 Pebble.addEventListener('webviewclosed',
-  function(e) {
-    console.log("Updating config!");
-      getinfo();
-    }                     
-);   
-               
+                        function(e) {
+                          console.log("Updating config!");
+                          getinfo();
+                        }
+                       );
 //functions and mappings
-
 function unitsToStringOWM(unit) {
   if (unit) {
     return 'imperial';
@@ -318,23 +279,22 @@ function unitsToString(unit) {
   }
   return 'c';
 }
-
 function translate(langloc){
   if (langloc==='es-ES'){
     return 'es';
   }
   else if (langloc==='fr_FR'){
-    return 'fr';  
+    return 'fr';
   }
   else if (langloc==='de_DE'){
     return 'de';
   }
   else if (langloc==='it_IT'){
     return 'it';
-  } 
+  }
   else if (langloc==='pt_PT'){
     return 'pt';
-  } 
+  }
   else {
     return 'en';
   }
@@ -348,11 +308,11 @@ function gettime(timetoparse){
   var mm=parseInt(arrayhhmm[1]);
   if (aamm=='am'){
     if (hh==12){
-      return mm;      
+      return mm;
     }
     else {
       return (hh*100)+mm;
-    }     
+    }
   }
   else {
     if (hh==12){
@@ -360,25 +320,33 @@ function gettime(timetoparse){
     }
     else {
       return ((hh+12)*100)+mm;
-    }    
+    }
   }
-}  
+}
 function locationyahoo(neigh,cit){
-      if (neigh!==null){
-        return neigh;
-      } 
+  if (neigh!==null){
+    return neigh;
+  }
   else {
     return cit;
   }
 }
 function temptousewu(unit,tempf,tempc){
   if (unit=="f"){
-    return tempf;
-  }
+    return tempf; }
   else return tempc;
 }
-
-// Function to return condition values from OWM 
+function apikeytouse(APIUser,APIPMKEY){
+  if (APIUser===""){
+    console.log("Using pmkey");
+    return APIPMKEY;
+  }
+  else {
+    console.log("Using Key User");
+    return APIUser;
+  }
+}
+// Function to return condition values from OWM
 function parseowm(condcode){
 if (condcode==200) return 1; //Condcode is thunderstorm with light rain - icon is day-storm-showers
 else if (condcode==201) return 3; //Condcode is thunderstorm with rain - icon is thunderstorm
@@ -453,12 +421,11 @@ else if (condcode==959) return 11; //Condcode is severe gale - icon is strong-wi
 else if (condcode==960) return 1; //Condcode is storm - icon is day-storm-showers
 else if (condcode==961) return 1; //Condcode is violent storm - icon is day-storm-showers
 else if (condcode==962) return 2; //Condcode is hurricane - icon is hurricane
-else return 26;  
+else return 26;
 }
-
 // Function to translate Yahoo
 function parseyahoo(condcode){
-  if (condcode===0) return 0; //Condcode is tornado - icon is tornado
+ if (condcode===0) return 0; //Condcode is tornado - icon is tornado
 else if (condcode==1) return 1; //Condcode is tropical storm - icon is day-storm-showers
 else if (condcode==2) return 2; //Condcode is hurricane - icon is hurricane
 else if (condcode==3) return 3; //Condcode is severe thunderstorms - icon is thunderstorm
@@ -506,37 +473,36 @@ else if (condcode==44) return 19; //Condcode is partly cloudy - icon is sunny-ov
 else if (condcode==45) return 1; //Condcode is thundershowers - icon is day-storm-showers
 else if (condcode==46) return 7; //Condcode is snow showers - icon is snowflake-cold
 else if (condcode==47) return 1; //Condcode is isolated thundershowers - icon is day-storm-showers
-else return 26;   
+else return 26;
 }
-
 // Function to translate wu
 function parsewu(condcode){
-  if (condcode=='chanceflurries') return 7; //Condcode is Chance of Flurries - icon is snowflake-cold
-  else if (condcode=='chancerain') return 6; //Condcode is Chance of Rain - icon is showers
-  else if (condcode=='chancerain') return 6; //Condcode is Chance Rain - icon is showers
-  else if (condcode=='chancesleet') return 4; //Condcode is Chance of Freezing Rain - icon is rain-mix
-  else if (condcode=='chancesleet') return 4; //Condcode is Chance of Sleet - icon is rain-mix
-  else if (condcode=='chancesnow') return 7; //Condcode is Chance of Snow - icon is snowflake-cold
-  else if (condcode=='chancetstorms') return 3; //Condcode is Chance of Thunderstorms - icon is thunderstorm
-  else if (condcode=='chancetstorms') return 3; //Condcode is Chance of a Thunderstorm - icon is thunderstorm
-  else if (condcode=='clear') return 17; //Condcode is Clear - icon is sunny
-  else if (condcode=='cloudy') return 13; //Condcode is Cloudy - icon is cloudy
-  else if (condcode=='flurries') return 7; //Condcode is Flurries - icon is snowflake-cold
-  else if (condcode=='fog') return 9; //Condcode is Fog - icon is fog
-  else if (condcode=='hazy') return 8; //Condcode is Haze - icon is dust
-  else if (condcode=='mostlycloudy') return 14; //Condcode is Mostly Cloudy - icon is day-cloudy
-  else if (condcode=='mostlysunny') return 19; //Condcode is Mostly Sunny - icon is sunny-overcast
-  else if (condcode=='partlycloudy') return 19; //Condcode is Partly Cloudy - icon is sunny-overcast
-  else if (condcode=='partlysunny') return 14; //Condcode is Partly Sunny - icon is day-cloudy
-  else if (condcode=='sleet') return 4; //Condcode is Freezing Rain - icon is rain-mix
-  else if (condcode=='rain') return 6; //Condcode is Rain - icon is showers
-  else if (condcode=='sleet') return 4; //Condcode is Sleet - icon is rain-mix
-  else if (condcode=='snow') return 7; //Condcode is Snow - icon is snowflake-cold
-  else if (condcode=='sunny') return 17; //Condcode is Sunny - icon is sunny
-  else if (condcode=='tstorms') return 3; //Condcode is Thunderstorms - icon is thunderstorm
-  else if (condcode=='tstorms') return 3; //Condcode is Thunderstorm - icon is thunderstorm
-  else if (condcode=='unknown') return 26; //Condcode is Unknown - icon is na
-  else if (condcode=='cloudy') return 13; //Condcode is Overcast - icon is cloudy
-  else if (condcode=='partlycloudy') return 19; //Condcode is Scattered Clouds - icon is sunny-overcast
-  else return 26; 
+ if (condcode=='chanceflurries') return 7; //Condcode is Chance of Flurries - icon is snowflake-cold
+ else if (condcode=='chancerain') return 6; //Condcode is Chance of Rain - icon is showers
+ else if (condcode=='chancerain') return 6; //Condcode is Chance Rain - icon is showers
+ else if (condcode=='chancesleet') return 4; //Condcode is Chance of Freezing Rain - icon is rain-mix
+ else if (condcode=='chancesleet') return 4; //Condcode is Chance of Sleet - icon is rain-mix
+ else if (condcode=='chancesnow') return 7; //Condcode is Chance of Snow - icon is snowflake-cold
+ else if (condcode=='chancetstorms') return 3; //Condcode is Chance of Thunderstorms - icon is thunderstorm
+ else if (condcode=='chancetstorms') return 3; //Condcode is Chance of a Thunderstorm - icon is thunderstorm
+ else if (condcode=='clear') return 17; //Condcode is Clear - icon is sunny
+ else if (condcode=='cloudy') return 13; //Condcode is Cloudy - icon is cloudy
+ else if (condcode=='flurries') return 7; //Condcode is Flurries - icon is snowflake-cold
+ else if (condcode=='fog') return 9; //Condcode is Fog - icon is fog
+ else if (condcode=='hazy') return 8; //Condcode is Haze - icon is dust
+ else if (condcode=='mostlycloudy') return 14; //Condcode is Mostly Cloudy - icon is day-cloudy
+ else if (condcode=='mostlysunny') return 19; //Condcode is Mostly Sunny - icon is sunny-overcast
+ else if (condcode=='partlycloudy') return 19; //Condcode is Partly Cloudy - icon is sunny-overcast
+ else if (condcode=='partlysunny') return 14; //Condcode is Partly Sunny - icon is day-cloudy
+ else if (condcode=='sleet') return 4; //Condcode is Freezing Rain - icon is rain-mix
+ else if (condcode=='rain') return 6; //Condcode is Rain - icon is showers
+ else if (condcode=='sleet') return 4; //Condcode is Sleet - icon is rain-mix
+ else if (condcode=='snow') return 7; //Condcode is Snow - icon is snowflake-cold
+ else if (condcode=='sunny') return 17; //Condcode is Sunny - icon is sunny
+ else if (condcode=='tstorms') return 3; //Condcode is Thunderstorms - icon is thunderstorm
+ else if (condcode=='tstorms') return 3; //Condcode is Thunderstorm - icon is thunderstorm
+ else if (condcode=='unknown') return 26; //Condcode is Unknown - icon is na
+ else if (condcode=='cloudy') return 13; //Condcode is Overcast - icon is cloudy
+ else if (condcode=='partlycloudy') return 19; //Condcode is Scattered Clouds - icon is sunny-overcast
+ else return 26;
 }

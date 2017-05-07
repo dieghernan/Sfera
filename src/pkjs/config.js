@@ -1,12 +1,9 @@
 // Clay Config: see https://github.com/pebble/clay
-
-
 module.exports = [
   {
     "type": "heading",
     "defaultValue": "Settings"
   },
-
   {
     "type": "section",
     "items": [
@@ -15,16 +12,32 @@ module.exports = [
         "defaultValue": "Theme settings"
       },
       {
+        "type": "select",
+        "messageKey": "ClockMode",
+        "label": "Clock Mode",
+        "defaultValue": "1",
+        "options": [
+          {
+            "label": "Digital",
+            "value": "1"
+          },
+          {
+            "label": "Analog",
+            "value": "2"
+          }
+        ]
+      },
+      {
         "type": "toggle",
         "messageKey": "DisplayDate",
         "label": "Date",
-        "defaultValue": false      
+        "defaultValue": false
       },
       {
         "type": "toggle",
         "messageKey": "DisplayDots",
         "label": "Display Dots",
-        "defaultValue": false      
+        "defaultValue": false
       },
       {
         "type": "toggle",
@@ -45,13 +58,24 @@ module.exports = [
         "defaultValue": "0x000055",
         "label": "Text"
       },
-
+      {
+        "type": "color",
+        "messageKey": "HourColor",
+        "defaultValue": "0xFF0000",
+        "label": "Hour Hand"
+      },
+      {
+        "type": "color",
+        "messageKey": "MinColor",
+        "defaultValue": "0x000055",
+        "label": "Minute Hand"
+      },
       {
         "type": "color",
         "messageKey": "DotsColor",
         "defaultValue": "0x0055FF",
         "label": "Dots Color"
-      },   
+      },
       {
         "type": "color",
         "messageKey": "BatteryColor",
@@ -60,51 +84,62 @@ module.exports = [
         "description": "On battery below 20% the color switchs to red"
       },
       {"type": "section",
-      "items": [
-      {
-        "type": "heading",
-        "defaultValue": "Night Theme",
-        "size":4
-      }  ,
-      {
-        "type": "toggle",
-        "messageKey": "NightTheme",
-        "label": "Activate Night Theme",
-        "defaultValue": false,
-        "description": "When activate requires GPS. Theme applied between sunset and sunrise."
-      },
-      {
-        "type": "color",
-        "messageKey": "BackgroundColorNight",
-        "defaultValue": "0x000055",
-        "label": "Background"
-      },
-      {
-        "type": "color",
-        "messageKey": "ForegroundColorNight",
-        "defaultValue": "0xFF5500",
-        "label": "Text"
-      },
-
-      {
-        "type": "color",
-        "messageKey": "DotsColorNight",
-        "defaultValue": "0xFF5500",
-        "label": "Dots Color"
-      },   
-      {
-        "type": "color",
-        "messageKey": "BatteryColorNight",
-        "defaultValue": "0xFF5500",
-        "label": "Battery Bar Color"
-      }
-      ]
+       "items": [
+         {
+           "type": "heading",
+           "defaultValue": "Night Theme",
+           "size":4
+         } ,
+         {
+           "type": "toggle",
+           "messageKey": "NightTheme",
+           "label": "Activate Night Theme",
+           "defaultValue": false,
+           "description": "When activate requires GPS. Theme applied between sunset and sunrise."
+         },
+         {
+           "type": "color",
+           "messageKey": "BackgroundColorNight",
+           "defaultValue": "0x000055",
+           "label": "Background"
+         },
+         {
+           "type": "color",
+           "messageKey": "ForegroundColorNight",
+           "defaultValue": "0xFF5500",
+           "label": "Text"
+         },
+         {
+           "type": "color",
+           "messageKey": "HourColorNight",
+           "defaultValue": "0xFF5500",
+           "label": "Hour Hand"
+         },
+         {
+           "type": "color",
+           "messageKey": "MinColorNight",
+           "defaultValue": "0xFFFFFF",
+           "label": "Minute Hand"
+         },
+         {
+           "type": "color",
+           "messageKey": "DotsColorNight",
+           "defaultValue": "0xFF5500",
+           "label": "Dots Color"
+         },
+         {
+           "type": "color",
+           "messageKey": "BatteryColorNight",
+           "defaultValue": "0xFF5500",
+           "label": "Battery Bar Color"
+         }
+       ]
       }
     ]
-  },  
+  },
   {
     "type": "section",
-    "items": [ 
+    "items": [
       {
         "type": "heading",
         "defaultValue": "Connection settings"
@@ -119,7 +154,7 @@ module.exports = [
         "type": "toggle",
         "messageKey": "DisplayTemp",
         "label": "Weather",
-        "defaultValue": false      
+        "defaultValue": false
       },
       {
         "type": "toggle",
@@ -135,11 +170,11 @@ module.exports = [
         "label": "Weather Provider",
         "description": "WU and OWM requires authentification. See next section",
         "options": [
-          { 
-            "label": "Yahoo", 
-            "value": "yahoo" 
+          {
+            "label": "Yahoo",
+            "value": "yahoo"
           },
-          { 
+          {
             "label": "OpenWeatherMap",
             "value": "owm"
           },
@@ -147,7 +182,17 @@ module.exports = [
             "label": "WeatherUnderground",
             "value": "wu"
           }
-        ]        
+        ]
+      },
+      {
+        "type": "input",
+        "messageKey": "APIKEY_User",
+        "defaultValue": "",
+        "label": "API Key",
+        "description": "Paste here your API Key. If blank the watch will attempt to request pmkey.xyz",
+        "attributes": {
+          "placeholder": "eg: xxxxxxxxxxxxx"
+        }
       },
       {
         "type": "input",
@@ -168,7 +213,7 @@ module.exports = [
         "attributes": {
           "placeholder": "eg: 12345"
         }
-      },      
+      },
       {
         "type": "slider",
         "messageKey": "UpSlider",
@@ -179,14 +224,19 @@ module.exports = [
         "max": 120,
         "step": 15},
     ]
- },
- {
-    "type": "submit",
-    "defaultValue":"Ok"
-  },
-  {
+      },
+      {
+      "type": "submit",
+      "defaultValue":"Ok"
+      },
+      {
+      "type": "heading",
+      "defaultValue": "version v4.0",
+      "size":6
+      },
+      {
       "type": "heading",
       "defaultValue": "Made in Madrid, Spain",
       "size":6
-  }    
-];
+      }
+    ];
