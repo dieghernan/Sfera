@@ -42,7 +42,7 @@ Autotranslating of weekday supported for:
 - [x] [pmkey.xyz](https://www.pmkey.xyz) implemented for easy managing your API keys
 
 # Screenshots
-![GIF](https://raw.githubusercontent.com/dieghernan/Sfera/master/assets/SferaGif.GIF)
+![GIF](https://raw.githubusercontent.com/dieghernan/Sfera/master/assets/SferaGif.gif)
 
 # Attributions
 ## Fonts: 
