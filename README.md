@@ -6,8 +6,9 @@
 
 
 # Features
-* Display centered hour
-* Minute display based on analog movement
+* Dual mode:
+   * Analog: Classic analog watchface
+   * Digital: Centered hour and minute display based on analog movement
 * Autodetection of 12h/24h based on your watch settings
 
 ## Take your pick
@@ -15,7 +16,7 @@
  * Dots as minute markers - choose your color
  * Battery level displayed beautifully as an arc near the bezel. Choose your color and below 20% it turns red!
  * Weather: Current conditions on °c or °f.
- * [NEW] Choose your weather provider:
+ * Choose your weather provider:
     * [Yahoo.com](https://www.yahoo.com/?ilc=401) _No API Key required (at this moment)_
     * [Wunderground](https://www.wunderground.com/?apiref=fb6856330e74c168)
     * [OpenWeatherMap](https://openweathermap.org/)
@@ -23,7 +24,7 @@
  * Location, based on your selected weather provider
  * On Bluetooth disconnected displays ![BTDis](https://raw.githubusercontent.com/dieghernan/Sfera/master/assets/BTDisconnectIcon.png)
  * On GPS requested but disconnected displays ![GPSDis](https://raw.githubusercontent.com/dieghernan/Sfera/master/assets/GPSDisconnectIcon.png)
- * [NEW] Night theme displayed between sunset and sunrise
+ * Night theme displayed between sunset and sunrise
     
 ## Internationalization
 Autotranslating of weekday supported for:
