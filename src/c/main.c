@@ -41,15 +41,15 @@ static void prv_default_settings(){
   settings.IsNightNow = false;
   settings.ClockMode=1;
 }
- //////End Configuration///
- ///////////////////////////
+//////End Configuration///
+///////////////////////////
 static int32_t get_angle_dot(int dot){
   // Progress through 12 hours, out of 360 degrees
   return (dot * 360) / 12;
 }
 static int get_angle_for_minutes(int minutes){
   int floor5=minutes/5;
-  return (floor5*5 * 360) / 60;  
+  return (floor5*5 * 360) / 60;
 };
 static int get_angle_for_battery(int battery){
   int floor30 = (100 - battery) * 360 / 3000;
@@ -58,7 +58,8 @@ static int get_angle_for_battery(int battery){
 static int hourtodraw(bool hourformat, int hournow){
   if (hourformat){
     return hournow;
-  } else{
+  } 
+  else{
     if (hournow == 0){
       return 12;
     } else if (hournow <= 12){
@@ -69,24 +70,27 @@ static int hourtodraw(bool hourformat, int hournow){
   }
 };
 static int xdaterect(bool is24, GRect hourect, GRect inner, GRect minrect){
-  if (is24 || settings.ClockMode==2){
-    return hourect.origin.x + hourect.size.w + 1;
-  } else{
+  if (!is24 && settings.ClockMode==1){
     return hourect.origin.x - (inner.size.w / 2 - hourect.size.w / 2 - minrect.size.w / 2 + 3);
+  } 
+  else if(!is24 && settings.ClockMode==3){
+    return hourect.origin.x + hourect.size.w + 1+20;
   }
+  else return  hourect.origin.x + hourect.size.w + 1;
 }
 static GColor ColorSelect(GColor ColorDay, GColor ColorNight){
   if (settings.NightTheme && settings.IsNightNow ){
     return ColorNight;
-  } else{
+  } 
+  else{
     return ColorDay;
   }
 }
 static GTextAlignment AlignDate(bool is24){
-  if (is24){
-    return GTextAlignmentLeft;
-  } else{
+  if (!is24 && settings.ClockMode==1){
     return GTextAlignmentRight;
+  } else{
+    return GTextAlignmentLeft;
   }
 }
 // Callback for js request
@@ -101,8 +105,7 @@ void request_watchjs(){
   // Send the message!
   app_message_outbox_send();
 }
-
- ///BT Connection
+///BT Connection
 static void bluetooth_callback(bool connected){
   settings.BTOn = connected;
 }
@@ -114,28 +117,64 @@ static void onreconnection(bool before, bool now){
 }
 //Update main layer
 static void layer_update_proc(Layer * layer, GContext * ctx){
-  // Colors
-  graphics_context_set_text_color(ctx, ColorSelect(settings.ForegroundColor, settings.ForegroundColorNight));
-  // Local language
-  const char * sys_locale = i18n_get_system_locale();
-  // Adjust geometry variables for dots
+  // Settings: Colors
+ graphics_context_set_text_color(ctx, ColorSelect(settings.ForegroundColor, settings.ForegroundColorNight));
+ // Local language
+ const char * sys_locale = i18n_get_system_locale();
+  //Offset for minutes gt 34
+  int offset;
+  if (s_minutes > 34){
+    offset = 6;
+  }
+  else{
+    offset = 0;
+  }
+  // Create Rects
   GRect bounds = layer_get_bounds(layer);
   GRect frame = grect_inset(bounds, GEdgeInsets(7));
   GRect inner = grect_inset(frame, GEdgeInsets(12));
-  int minute_angle = get_angle_for_minutes(s_minutes);
-  // Analog Mode
-  if (settings.ClockMode!=1){
+  int minute_angle = get_angle_for_minutes(s_minutes);  
+  GRect minrect_init = grect_centered_from_polar(inner, GOvalScaleModeFitCircle, DEG_TO_TRIGANGLE(minute_angle), GSize(36, 28));
+  GRect minrect = GRect(minrect_init.origin.x + offset,
+                        minrect_init.origin.y,
+                        minrect_init.size.w,
+                        minrect_init.size.h);
+  GRect hourect = grect_centered_from_polar(GRect(bounds.size.h / 2, bounds.size.w / 2, 0, 0),
+                                            GOvalScaleModeFitCircle,
+                                            0,
+                                            GSize(50, 42)
+                                           );
+  // Digital Mode
+  if (settings.ClockMode==1){
+    graphics_context_set_fill_color(ctx, ColorSelect( settings.BackgroundColor, settings.BackgroundColorNight));
+    // Create minute display
+    GRect top_minrect =minrect;
+    char minutenow[4];
+    snprintf(minutenow, sizeof(minutenow), "%02d", s_minutes);
+    graphics_fill_rect(ctx, top_minrect, 8, GCornersAll);
+    graphics_draw_text(ctx, minutenow, FontMinute,top_minrect,
+                       GTextOverflowModeFill, GTextAlignmentCenter, NULL);
+    // Create hour display
+    char hournow[4];
+    int hourtorect = hourtodraw(clock_is_24h_style(), s_hours);
+    snprintf(hournow, sizeof(hournow), "%02d", hourtorect);
+    if (settings.ClockMode!=2){
+      GRect top_hourect =hourect;
+      graphics_fill_rect(ctx, top_hourect, 8, GCornersAll);
+      graphics_draw_text(ctx, hournow,FontHour,top_hourect,GTextOverflowModeFill, GTextAlignmentCenter, NULL);
+    }
+  }
+  // Clock Mode: Analogic - Hour and Minute
+  else if (settings.ClockMode==2){
     GPoint p_center = GPoint(bounds.size.w / 2, bounds.size.h / 2);
     GPoint p_minute = gpoint_from_polar(inner, GOvalScaleModeFitCircle, DEG_TO_TRIGANGLE((s_minutes*360)/60));
     //angle hour
-    int anglehour = 360 * (s_hours % 12) / 12;
-    int plusmin = 30 * s_minutes / 60;
-    GPoint p_hour = gpoint_from_polar(grect_inset(inner, GEdgeInsets(25)), GOvalScaleModeFitCircle,
-                                    DEG_TO_TRIGANGLE(anglehour + plusmin));
+    int anglehour = (360 * (s_hours % 12) / 12)+(30 * s_minutes / 60);
+    GPoint p_hour = gpoint_from_polar(grect_inset(inner, GEdgeInsets(25)), GOvalScaleModeFitCircle, DEG_TO_TRIGANGLE(anglehour));
     //Hour
     graphics_context_set_fill_color(ctx, ColorSelect( settings.HourColor, settings.HourColorNight));
     graphics_context_set_stroke_color(ctx,ColorSelect( settings.HourColor, settings.HourColorNight));
-    graphics_fill_circle(ctx, p_center, 5);    
+    graphics_fill_circle(ctx, p_center, 5);
     graphics_context_set_stroke_width(ctx, 6);
     graphics_draw_line(ctx, p_center, p_hour);
     //Minute
@@ -145,7 +184,49 @@ static void layer_update_proc(Layer * layer, GContext * ctx){
     graphics_context_set_stroke_width(ctx, 4);
     graphics_draw_line(ctx, p_center, p_minute);
   }
-   //Prepare battery display
+  //Dual Mode  
+   else if (settings.ClockMode==3){
+     GRect hourmixed=GRect(bounds.size.w/2-24,bounds.size.h/2-24,48,24);
+     GRect minmixed=GRect(hourmixed.origin.x,
+                          hourmixed.origin.y+hourmixed.size.h-5,
+                          hourmixed.size.w,
+                          hourmixed.size.h);
+     GRect digmixed=GRect(bounds.size.w/2-30, bounds.size.h/2-30, 60, 60);
+     //Analog
+     //Hour
+     //angle hour
+     int anglehour3 = (360 * (s_hours % 12) / 12)+(30 * s_minutes / 60);
+     GPoint hourinit3=gpoint_from_polar(digmixed, GOvalScaleModeFitCircle,
+                                        DEG_TO_TRIGANGLE(anglehour3));
+     GPoint hourfin3=gpoint_from_polar(grect_inset(inner, GEdgeInsets(20)), GOvalScaleModeFitCircle,
+                                       DEG_TO_TRIGANGLE(anglehour3));
+     graphics_context_set_stroke_color(ctx,ColorSelect( settings.HourColor, settings.HourColorNight));
+     graphics_context_set_stroke_width(ctx, 6);
+     graphics_draw_line(ctx, hourinit3, hourfin3);
+     graphics_context_set_stroke_width(ctx, 8);
+     //Minute
+     GPoint mininit3=gpoint_from_polar(digmixed, GOvalScaleModeFitCircle, DEG_TO_TRIGANGLE((s_minutes*360)/60));
+     GPoint minfin3=gpoint_from_polar(inner, GOvalScaleModeFitCircle, DEG_TO_TRIGANGLE((s_minutes*360)/60));
+     graphics_context_set_stroke_color(ctx, ColorSelect( settings.MinColor, settings.MinColorNight));
+     graphics_context_set_stroke_width(ctx, 4);
+     graphics_draw_line(ctx, mininit3, minfin3);
+     graphics_context_set_stroke_width(ctx, 3);
+     //Digital
+     char hournow3[4];
+     int hourtorect3 = hourtodraw(clock_is_24h_style(), s_hours);
+     snprintf(hournow3, sizeof(hournow3), "%02d", hourtorect3);
+     graphics_draw_text(ctx,hournow3, FontMinute, hourmixed, GTextOverflowModeWordWrap, GTextAlignmentCenter, NULL);
+     char minutenow[4];
+     snprintf(minutenow, sizeof(minutenow), "%02d", s_minutes);
+     graphics_draw_text(ctx, minutenow, FontMinute, minmixed, GTextOverflowModeWordWrap, GTextAlignmentCenter, NULL);
+   }  
+  // Complications
+  int offsetmix;
+  if (settings.ClockMode==3){
+    offsetmix=18;
+  }
+  else offsetmix=0;
+  //Prepare battery display
   if (settings.DisplayBattery){
     s_battery_level = battery_state_service_peek().charge_percent;
     graphics_context_set_stroke_width(ctx, 4);
@@ -157,72 +238,54 @@ static void layer_update_proc(Layer * layer, GContext * ctx){
     graphics_draw_arc(ctx,frame,
                       GOvalScaleModeFitCircle,
                       DEG_TO_TRIGANGLE(get_angle_for_battery(s_battery_level)),
-                      DEG_TO_TRIGANGLE(360)
-                     );
+                      DEG_TO_TRIGANGLE(360));
   }
   // Create dots only if active
   if (settings.DisplayDots){
     graphics_context_set_fill_color(ctx, ColorSelect(settings.DotsColor, settings.DotsColorNight));
     for (int i = 0; i < 12; i++){
       int dot_angle = get_angle_dot(i);
-      GPoint pos = gpoint_from_polar(frame,
-                                     GOvalScaleModeFitCircle,
-                                     DEG_TO_TRIGANGLE(dot_angle)
-                                    );
-      if (settings.ClockMode==2){
+      GPoint pos = gpoint_from_polar(frame,GOvalScaleModeFitCircle,DEG_TO_TRIGANGLE(dot_angle));
+      if (settings.ClockMode!=1){
         graphics_fill_circle(ctx, pos, 3);
       }
       // Leave the current minute without dot
       else if (i != minute_angle/30 ){
         graphics_fill_circle(ctx, pos, 3);
-      }   
+      }
     }
   }
-  
-  // rects
-    //Offset for Loc Layer
-    //Offset for minutes gt 34
-  int offset;
-  if (s_minutes > 34){
-    offset = 6;
-  } else{
-    offset = 0;
-  }
+  //Offset for Loc Layer
   int offsetloc;
   if (s_minutes > 49 && s_minutes < 55){
     offsetloc = offset;
-  } else{
-    offsetloc = 0;
   }
-  char minutenow[4];
-  snprintf(minutenow, sizeof(minutenow), "%02d", s_minutes);
-  GRect minrect_init = grect_centered_from_polar(inner, GOvalScaleModeFitCircle, DEG_TO_TRIGANGLE(minute_angle), GSize(36, 28));
-  GRect minrect = GRect(minrect_init.origin.x + offset,
-                        minrect_init.origin.y,
-                        minrect_init.size.w,
-                        minrect_init.size.h);
-    GRect hourect = grect_centered_from_polar(GRect(bounds.size.h / 2, bounds.size.w / 2, 0, 0),
-                                            GOvalScaleModeFitCircle,
-                                            0,
-                                            GSize(50, 42)
-                                           );
-  
-  
-
-    //Put AM or PM format
-  if (!clock_is_24h_style() && settings.ClockMode==1){
+  else{
+    offsetloc = 0;
+  }  
+  //Put AM or PM format
+  if (!clock_is_24h_style() && settings.ClockMode!=2){
     char ampm[2];
     if (s_hours < 12){
       strcpy(ampm, "am");
     } else{
       strcpy(ampm, "pm");
     }
+    int offsetampmdualx;
+    int offsetampmdualy;
+    if (settings.ClockMode==3){
+      offsetampmdualx=8;
+      offsetampmdualy=15;
+    }
+    else{
+      offsetampmdualx=0;
+      offsetampmdualy=0;      
+    } 
     //Create Rect and display
-    GRect ampmrect = GRect(hourect.origin.x + hourect.size.w + 1,
-                           hourect.origin.y + 8,
+    GRect ampmrect = GRect(hourect.origin.x + hourect.size.w + 1-offsetampmdualx,
+                           hourect.origin.y +hourect.size.h - 20-offsetampmdualy,
                            inner.size.w / 2 - hourect.size.w / 2 - minrect.size.w / 2 + 2,
-                           hourect.size.h
-                          );
+                           8);
     graphics_draw_text(ctx, ampm,
                        FontDate, ampmrect,
                        GTextOverflowModeWordWrap, GTextAlignmentLeft, NULL
@@ -255,14 +318,13 @@ static void layer_update_proc(Layer * layer, GContext * ctx){
   if (!settings.BTOn){
     if (settings.DisplayLoc || settings.DisplayTemp){
       GRect warnrect = GRect(hourect.origin.x - 17,
-                             hourect.origin.y - 20,
+                             hourect.origin.y - 20-offsetmix,
                              hourect.size.w + 34,
-                             25); 
+                             25);
       graphics_draw_text(ctx, "a",
                          FontSymbol,
                          warnrect,
-                         GTextOverflowModeWordWrap, GTextAlignmentCenter, NULL
-                        );
+                         GTextOverflowModeWordWrap, GTextAlignmentCenter, NULL);
     }
   }
   //If connected but GPS off then display warning
@@ -270,7 +332,7 @@ static void layer_update_proc(Layer * layer, GContext * ctx){
     if (!settings.GPSOn){
       if (settings.DisplayLoc || settings.DisplayTemp){
         GRect warnrect = GRect(hourect.origin.x - 17,
-                               hourect.origin.y - 20,
+                               hourect.origin.y - 20-offsetmix,
                                hourect.size.w + 34,
                                25);
         graphics_draw_text(ctx, "b",
@@ -286,7 +348,7 @@ static void layer_update_proc(Layer * layer, GContext * ctx){
       if (settings.DisplayTemp){
         // Create temp display
         GRect temprect = GRect(hourect.origin.x - 10,
-                               hourect.origin.y + hourect.size.h + 1,
+                               hourect.origin.y + hourect.size.h + 1+offsetmix,
                                hourect.size.w / 2 + 9,
                                (inner.size.h / 2 - hourect.size.h / 2) / 2);
         graphics_draw_text(ctx, tempstring,
@@ -295,7 +357,7 @@ static void layer_update_proc(Layer * layer, GContext * ctx){
                           );
         // Create condition display
         GRect condrect = GRect(hourect.origin.x + hourect.size.w / 2 + 1,
-                               hourect.origin.y + hourect.size.h + 1,
+                               hourect.origin.y + hourect.size.h + 1+offsetmix,
                                hourect.size.w / 2 - 1,
                                (inner.size.h / 2 - hourect.size.h / 2) / 2);
         graphics_draw_text(ctx, condstring,
@@ -306,7 +368,7 @@ static void layer_update_proc(Layer * layer, GContext * ctx){
       //If location was selected display
       if (settings.DisplayLoc){
         GRect locrect = GRect(hourect.origin.x - 17 + offsetloc / 2,
-                              hourect.origin.y - 20 - offsetloc / 2,
+                              hourect.origin.y - 20 - offsetloc / 2-offsetmix,
                               hourect.size.w + 34 - offsetloc,
                               25 + offsetloc / 2);
         graphics_draw_text(ctx, citistring,
@@ -315,26 +377,6 @@ static void layer_update_proc(Layer * layer, GContext * ctx){
                           );
       }
     }
-  }
-  // Digital Mode 
-  graphics_context_set_fill_color(ctx, ColorSelect( settings.BackgroundColor, settings.BackgroundColorNight));
-
-  // Create minute display
-  if (settings.ClockMode!=2){
-    GRect top_minrect =minrect;
-    graphics_fill_rect(ctx, top_minrect, 8, GCornersAll);
-    graphics_draw_text(ctx, minutenow, FontMinute,top_minrect,
-                         GTextOverflowModeFill, GTextAlignmentCenter, NULL);
-  }
- 
-  // Create hour display
-  char hournow[4];
-  int hourtorect = hourtodraw(clock_is_24h_style(), s_hours);
-  snprintf(hournow, sizeof(hournow), "%02d", hourtorect);
-  if (settings.ClockMode!=2){
-    GRect top_hourect  =hourect;
-    graphics_fill_rect(ctx, top_hourect, 8, GCornersAll);
-    graphics_draw_text(ctx, hournow,FontHour,top_hourect,GTextOverflowModeFill, GTextAlignmentCenter, NULL);
   }
 }
 /////////////////////////////////////////
@@ -350,7 +392,6 @@ static void prv_load_settings(){
 // Save the settings to persistent storage
 static void prv_save_settings(){
   persist_write_data(SETTINGS_KEY, & settings, sizeof(settings));
-  // Update date
 }
 // Handle the response from AppMessage
 static void prv_inbox_received_handler(DictionaryIterator * iter, void * context){
@@ -492,12 +533,11 @@ static void prv_inbox_received_handler(DictionaryIterator * iter, void * context
       APP_LOG(APP_LOG_LEVEL_DEBUG, "NTHeme off");
     } else settings.NightTheme = true;
   }
-  Tuple * clockmode_t  = dict_find(iter, MESSAGE_KEY_ClockMode);
+  Tuple * clockmode_t = dict_find(iter, MESSAGE_KEY_ClockMode);
   if (clockmode_t){
     settings.ClockMode=atoi(clockmode_t->value->cstring);
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Mode %d",settings.ClockMode);
   }
-  
   //Update colors
   layer_mark_dirty(s_canvas);
   window_set_background_color(s_window, ColorSelect( settings.BackgroundColor, settings.BackgroundColorNight));
@@ -605,7 +645,7 @@ static void init(){
   s_minutes=t->tm_min;
   s_day=t->tm_mday;
   s_weekday=t->tm_wday;
-    //Register and open
+  //Register and open
   app_message_register_inbox_received(prv_inbox_received_handler);
   app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
   // Load Fonts
@@ -621,7 +661,7 @@ static void init(){
   tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);
   connection_service_subscribe((ConnectionHandlers){
     .pebble_app_connection_handler = bluetooth_callback
- });
+  });
 }
 static void deinit(){
   tick_timer_service_unsubscribe();

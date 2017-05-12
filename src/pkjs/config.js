@@ -24,6 +24,10 @@ module.exports = [
           {
             "label": "Analog",
             "value": "2"
+          },
+          {
+            "label": "Dual",
+            "value": "3"
           }
         ]
       },
@@ -67,7 +71,7 @@ module.exports = [
       {
         "type": "color",
         "messageKey": "MinColor",
-        "defaultValue": "0x000055",
+        "defaultValue": "0x55AAFF",
         "label": "Minute Hand"
       },
       {
@@ -231,7 +235,7 @@ module.exports = [
       },
       {
       "type": "heading",
-      "defaultValue": "version v4.0",
+      "defaultValue": "version v5.0",
       "size":6
       },
       {
