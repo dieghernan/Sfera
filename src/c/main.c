@@ -49,7 +49,11 @@ static int32_t get_angle_dot(int dot){
 }
 static int get_angle_for_minutes(int minutes){
   int floor5=minutes/5;
-  return (floor5*5 * 360) / 60;
+  if (minutes%5 ==0){
+    return (floor5*5 * 360) / 60;
+  }
+  else
+    return (floor5*5 * 360) / 60+15;  
 };
 static int get_angle_for_battery(int battery){
   int floor30 = (100 - battery) * 360 / 3000;
@@ -131,6 +135,8 @@ static void layer_update_proc(Layer * layer, GContext * ctx){
   }
   // Create Rects
   GRect bounds = layer_get_bounds(layer);
+  graphics_context_set_fill_color(ctx, ColorSelect(settings.BackgroundColor, settings.BackgroundColorNight)); 
+  graphics_fill_rect(ctx, bounds, 0, GCornersAll);
   GRect frame = grect_inset(bounds, GEdgeInsets(7));
   GRect inner = grect_inset(frame, GEdgeInsets(12));
   int minute_angle = get_angle_for_minutes(s_minutes);  
@@ -249,8 +255,8 @@ static void layer_update_proc(Layer * layer, GContext * ctx){
       if (settings.ClockMode!=1){
         graphics_fill_circle(ctx, pos, 3);
       }
-      // Leave the current minute without dot
-      else if (i != minute_angle/30 ){
+      // Leave the current minute without dot if mod is 0
+      else if (i != minute_angle/30 || minute_angle % 30 !=0 ){
         graphics_fill_circle(ctx, pos, 3);
       }
     }
