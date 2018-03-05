@@ -4,8 +4,7 @@
 
 #### [Download from Pebble Appstore](https://apps.getpebble.com/applications/58c2f7110dfc32a52a00081f)
 
-[![paypal](https://www.paypalobjects.com/en_US/ES/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=2EARS2HWD6LMS)
-
+[![paypal](https://www.paypalobjects.com/en_US/GB/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=NXZSTT4APXQ4G)
 
 # Features
 * Clock mode:
