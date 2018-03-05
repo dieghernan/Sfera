@@ -10,6 +10,7 @@
    * Analog: Classic analog watchface
    * Digital: Centered hour and minute display based on analog movement
    * Dual: Analog and Digital all in one
+   * Mix: Digital Hour and Analogic Minute
 * Autodetection of 12h/24h based on your watch settings
 
 ## Take your pick
