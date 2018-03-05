@@ -28,6 +28,10 @@ module.exports = [
           {
             "label": "Dual",
             "value": "3"
+          },
+          {
+            "label": "Mix",
+            "value": "4"
           }
         ]
       },
@@ -235,7 +239,7 @@ module.exports = [
       },
       {
       "type": "heading",
-      "defaultValue": "version v5.1",
+      "defaultValue": "version v6.0",
       "size":6
       },
       {

@@ -82,6 +82,14 @@ static int xdaterect(bool is24, GRect hourect, GRect inner, GRect minrect){
   }
   else return  hourect.origin.x + hourect.size.w + 1;
 }
+static GRect LineforMin(GRect DotYes,GRect DotNo){
+  if (settings.DisplayDots){
+    return DotYes;   
+  }
+  else {
+    return DotNo;
+  }  
+}
 static GColor ColorSelect(GColor ColorDay, GColor ColorNight){
   if (settings.NightTheme && settings.IsNightNow ){
     return ColorNight;
@@ -139,6 +147,7 @@ static void layer_update_proc(Layer * layer, GContext * ctx){
   graphics_fill_rect(ctx, bounds, 0, GCornersAll);
   GRect frame = grect_inset(bounds, GEdgeInsets(7));
   GRect inner = grect_inset(frame, GEdgeInsets(12));
+  GRect inner2 = grect_inset(frame, GEdgeInsets(4));
   int minute_angle = get_angle_for_minutes(s_minutes);  
   GRect minrect_init = grect_centered_from_polar(inner, GOvalScaleModeFitCircle, DEG_TO_TRIGANGLE(minute_angle), GSize(36, 28));
   GRect minrect = GRect(minrect_init.origin.x + offset,
@@ -149,6 +158,11 @@ static void layer_update_proc(Layer * layer, GContext * ctx){
                                             GOvalScaleModeFitCircle,
                                             0,
                                             GSize(50, 42)
+                                           );
+   GRect hourect_mix = grect_centered_from_polar(GRect(bounds.size.h / 2, bounds.size.w / 2, 0, 0),
+                                            GOvalScaleModeFitCircle,
+                                            0,
+                                            GSize(55, 44)
                                            );
   // Digital Mode
   if (settings.ClockMode==1){
@@ -173,7 +187,7 @@ static void layer_update_proc(Layer * layer, GContext * ctx){
   // Clock Mode: Analogic - Hour and Minute
   else if (settings.ClockMode==2){
     GPoint p_center = GPoint(bounds.size.w / 2, bounds.size.h / 2);
-    GPoint p_minute = gpoint_from_polar(inner, GOvalScaleModeFitCircle, DEG_TO_TRIGANGLE((s_minutes*360)/60));
+    GPoint p_minute= gpoint_from_polar(LineforMin(inner, inner2), GOvalScaleModeFitCircle,DEG_TO_TRIGANGLE((s_minutes*360)/60));
     //angle hour
     int anglehour = (360 * (s_hours % 12) / 12)+(30 * s_minutes / 60);
     GPoint p_hour = gpoint_from_polar(grect_inset(inner, GEdgeInsets(25)), GOvalScaleModeFitCircle, DEG_TO_TRIGANGLE(anglehour));
@@ -212,7 +226,7 @@ static void layer_update_proc(Layer * layer, GContext * ctx){
      graphics_context_set_stroke_width(ctx, 8);
      //Minute
      GPoint mininit3=gpoint_from_polar(digmixed, GOvalScaleModeFitCircle, DEG_TO_TRIGANGLE((s_minutes*360)/60));
-     GPoint minfin3=gpoint_from_polar(inner, GOvalScaleModeFitCircle, DEG_TO_TRIGANGLE((s_minutes*360)/60));
+     GPoint minfin3= gpoint_from_polar(LineforMin(inner, inner2), GOvalScaleModeFitCircle,DEG_TO_TRIGANGLE((s_minutes*360)/60));
      graphics_context_set_stroke_color(ctx, ColorSelect( settings.MinColor, settings.MinColorNight));
      graphics_context_set_stroke_width(ctx, 4);
      graphics_draw_line(ctx, mininit3, minfin3);
@@ -225,7 +239,23 @@ static void layer_update_proc(Layer * layer, GContext * ctx){
      char minutenow[4];
      snprintf(minutenow, sizeof(minutenow), "%02d", s_minutes);
      graphics_draw_text(ctx, minutenow, FontMinute, minmixed, GTextOverflowModeWordWrap, GTextAlignmentCenter, NULL);
-   }  
+   } 
+  //Mix Mode
+   else if (settings.ClockMode==4){
+     // Minute
+     GPoint p_min_init=gpoint_from_polar(hourect_mix, GOvalScaleModeFillCircle, DEG_TO_TRIGANGLE((s_minutes*360)/60));
+     graphics_context_set_stroke_color(ctx, ColorSelect( settings.MinColor, settings.MinColorNight));
+     graphics_context_set_stroke_width(ctx, 4);
+     GPoint p_minute= gpoint_from_polar(LineforMin(inner, inner2), GOvalScaleModeFitCircle,DEG_TO_TRIGANGLE((s_minutes*360)/60));
+     graphics_draw_line(ctx, p_min_init, p_minute);
+      
+     // Create hour display
+     char hournow[4];
+     int hourtorect = hourtodraw(clock_is_24h_style(), s_hours);
+     snprintf(hournow, sizeof(hournow), "%02d", hourtorect);
+     GRect top_hourect =hourect_mix;     
+     graphics_draw_text(ctx, hournow,FontHour,top_hourect,GTextOverflowModeFill, GTextAlignmentCenter, NULL);
+   }
   // Complications
   int offsetmix;
   if (settings.ClockMode==3){
