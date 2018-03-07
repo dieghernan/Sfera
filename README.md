@@ -68,7 +68,7 @@ Autotranslating of weekday supported for:
 # Do you ❤️ this watchface? There are more!
 
 <table align="center">
-    <tr>
+    <tr valign="middle">
         <td align="center"><a href="https://dieghernan.github.io/Bzel/"><img src="https://raw.githubusercontent.com/dieghernan/Bzel/master/store/BannerBzel.png" width="120" ></a></td>
       <td align="left"><b>Bzel</b> intregates the bezel into your watchface</td>
       <td align="center"><a href="https://apps.getpebble.com/applications/59280895b67f9f43f80004c9">Download</a></td>
