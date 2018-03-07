@@ -73,12 +73,12 @@ Autotranslating of weekday supported for:
       <td align="left"><b>Bzel</b> intregates the bezel into your watchface</td>
       <td align="center"><a href="https://apps.getpebble.com/applications/59280895b67f9f43f80004c9">Download</a></td>
     </tr>
-      <tr>
+      <tr valign="middle">
         <td align="center"><a href="https://dieghernan.github.io/TextWatchClima/"><img src="https://dieghernan.github.io/TextWatchClima/store/BannerRound.png" width="120" ></a></td>
       <td align="left"><b>TextWatchClima</b> Several languages supported. Includes weather info</td>
       <td align="center"><a href="https://apps.getpebble.com/en_US/application/58a94da90dfc32d35b0002f8">Download</a></td>
     </tr>
-        <tr>
+        <tr valign="middle">
         <td align="center"><a href="https://dieghernan.github.io/7egment/"><img src="https://raw.githubusercontent.com/dieghernan/7egment/master/store/Banner.png" width="120" ></a></td>
       <td align="left"><b>7egment</b> Retro inspired watchface</td>
       <td align="center"><a href="https://apps.getpebble.com/applications/591ead370dfc32aacf000204">Download</a></td>
