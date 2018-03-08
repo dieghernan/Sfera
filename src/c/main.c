@@ -150,6 +150,11 @@ static void layer_update_proc(Layer * layer, GContext * ctx){
                                             0,
                                             GSize(50, 42)
                                            );
+  GRect mininit_rect = grect_centered_from_polar(GRect(bounds.size.h / 2, bounds.size.w / 2, 0, 0),
+                                            GOvalScaleModeFitCircle,
+                                            0,
+                                            GSize(55, 44)
+                                           );
   // Digital Mode
   if (settings.ClockMode==1){
     graphics_context_set_fill_color(ctx, ColorSelect( settings.BackgroundColor, settings.BackgroundColorNight));
@@ -225,7 +230,21 @@ static void layer_update_proc(Layer * layer, GContext * ctx){
      char minutenow[4];
      snprintf(minutenow, sizeof(minutenow), "%02d", s_minutes);
      graphics_draw_text(ctx, minutenow, FontMinute, minmixed, GTextOverflowModeWordWrap, GTextAlignmentCenter, NULL);
-   }  
+   }
+  else if (settings.ClockMode==4){
+    GRect top_hourect = mininit_rect;
+    // Minute
+    GPoint p_min_init=gpoint_from_polar(top_hourect, GOvalScaleModeFillCircle, DEG_TO_TRIGANGLE((s_minutes*360)/60));
+    GPoint p_minute = gpoint_from_polar(inner, GOvalScaleModeFitCircle, DEG_TO_TRIGANGLE((s_minutes*360)/60));
+    graphics_context_set_stroke_color(ctx, ColorSelect( settings.MinColor, settings.MinColorNight));
+    graphics_context_set_stroke_width(ctx, 4);
+    graphics_draw_line(ctx, p_min_init, p_minute);
+    // Create hour display
+    char hournow[4];
+    int hourtorect = hourtodraw(clock_is_24h_style(), s_hours);
+    snprintf(hournow, sizeof(hournow), "%02d", hourtorect);
+    graphics_draw_text(ctx, hournow,FontHour,top_hourect,GTextOverflowModeFill, GTextAlignmentCenter, NULL);
+  }
   // Complications
   int offsetmix;
   if (settings.ClockMode==3){
