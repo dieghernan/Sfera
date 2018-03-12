@@ -239,6 +239,11 @@ module.exports = [
       },
       {
       "type": "heading",
+      "defaultValue":"<a href='https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=AAYBMD7APLZFN'>Donate via PayPal (0.99€)</a>",
+      "size":6
+      },    
+      {
+      "type": "heading",
       "defaultValue": "version v6.2",
       "size":6
       },

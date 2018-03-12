@@ -139,6 +139,7 @@ static void layer_update_proc(Layer * layer, GContext * ctx){
   graphics_fill_rect(ctx, bounds, 0, GCornersAll);
   GRect frame = grect_inset(bounds, GEdgeInsets(7));
   GRect inner = grect_inset(frame, GEdgeInsets(12));
+  GRect inner2 = grect_inset(frame, GEdgeInsets(6));
   int minute_angle = get_angle_for_minutes(s_minutes);  
   GRect minrect_init = grect_centered_from_polar(inner, GOvalScaleModeFitCircle, DEG_TO_TRIGANGLE(minute_angle), GSize(36, 28));
   GRect minrect = GRect(minrect_init.origin.x + offset,
@@ -178,7 +179,6 @@ static void layer_update_proc(Layer * layer, GContext * ctx){
   // Clock Mode: Analogic - Hour and Minute
   else if (settings.ClockMode==2){
     GPoint p_center = GPoint(bounds.size.w / 2, bounds.size.h / 2);
-    GPoint p_minute = gpoint_from_polar(inner, GOvalScaleModeFitCircle, DEG_TO_TRIGANGLE((s_minutes*360)/60));
     //angle hour
     int anglehour = (360 * (s_hours % 12) / 12)+(30 * s_minutes / 60);
     GPoint p_hour = gpoint_from_polar(grect_inset(inner, GEdgeInsets(25)), GOvalScaleModeFitCircle, DEG_TO_TRIGANGLE(anglehour));
@@ -193,7 +193,14 @@ static void layer_update_proc(Layer * layer, GContext * ctx){
     graphics_context_set_fill_color(ctx,ColorSelect( settings.MinColor, settings.MinColorNight));
     graphics_fill_circle(ctx, p_center, 2);
     graphics_context_set_stroke_width(ctx, 4);
-    graphics_draw_line(ctx, p_center, p_minute);
+    if (settings.DisplayDots){
+      GPoint p_minute = gpoint_from_polar(inner, GOvalScaleModeFitCircle, DEG_TO_TRIGANGLE((s_minutes*360)/60));
+      graphics_draw_line(ctx, p_center, p_minute);
+    }
+    else {
+      GPoint p_minute = gpoint_from_polar(inner2, GOvalScaleModeFitCircle, DEG_TO_TRIGANGLE((s_minutes*360)/60));
+      graphics_draw_line(ctx, p_center, p_minute);
+    }
   }
   //Dual Mode  
    else if (settings.ClockMode==3){
@@ -217,11 +224,16 @@ static void layer_update_proc(Layer * layer, GContext * ctx){
      graphics_context_set_stroke_width(ctx, 8);
      //Minute
      GPoint mininit3=gpoint_from_polar(digmixed, GOvalScaleModeFitCircle, DEG_TO_TRIGANGLE((s_minutes*360)/60));
-     GPoint minfin3=gpoint_from_polar(inner, GOvalScaleModeFitCircle, DEG_TO_TRIGANGLE((s_minutes*360)/60));
      graphics_context_set_stroke_color(ctx, ColorSelect( settings.MinColor, settings.MinColorNight));
      graphics_context_set_stroke_width(ctx, 4);
-     graphics_draw_line(ctx, mininit3, minfin3);
-     graphics_context_set_stroke_width(ctx, 3);
+     if (settings.DisplayDots){
+      GPoint p_minute = gpoint_from_polar(inner, GOvalScaleModeFitCircle, DEG_TO_TRIGANGLE((s_minutes*360)/60));
+      graphics_draw_line(ctx, mininit3, p_minute);
+     }
+     else {
+      GPoint p_minute = gpoint_from_polar(inner2, GOvalScaleModeFitCircle, DEG_TO_TRIGANGLE((s_minutes*360)/60));
+      graphics_draw_line(ctx, mininit3, p_minute);
+     }
      //Digital
      char hournow3[4];
      int hourtorect3 = hourtodraw(clock_is_24h_style(), s_hours);
@@ -235,10 +247,17 @@ static void layer_update_proc(Layer * layer, GContext * ctx){
     GRect top_hourect = mininit_rect;
     // Minute
     GPoint p_min_init=gpoint_from_polar(top_hourect, GOvalScaleModeFillCircle, DEG_TO_TRIGANGLE((s_minutes*360)/60));
-    GPoint p_minute = gpoint_from_polar(inner, GOvalScaleModeFitCircle, DEG_TO_TRIGANGLE((s_minutes*360)/60));
     graphics_context_set_stroke_color(ctx, ColorSelect( settings.MinColor, settings.MinColorNight));
     graphics_context_set_stroke_width(ctx, 4);
-    graphics_draw_line(ctx, p_min_init, p_minute);
+    if (settings.DisplayDots){
+      GPoint p_minute = gpoint_from_polar(inner, GOvalScaleModeFitCircle, DEG_TO_TRIGANGLE((s_minutes*360)/60));
+      graphics_draw_line(ctx, p_min_init, p_minute);
+    }
+    else {
+      GPoint p_minute = gpoint_from_polar(inner2, GOvalScaleModeFitCircle, DEG_TO_TRIGANGLE((s_minutes*360)/60));
+      graphics_draw_line(ctx, p_min_init, p_minute);
+    }
+
     // Create hour display
     char hournow[4];
     int hourtorect = hourtodraw(clock_is_24h_style(), s_hours);
